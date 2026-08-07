@@ -217,14 +217,17 @@ export default function PlayerPage() {
                 <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{player.display_name}</span>
+                        <span className="text-xs text-gray-500">({color})</span>
                         {!isPending && (
                           <span className={`font-semibold text-sm uppercase tracking-wide ${outcomeColor[outcome]}`}>
                             {outcome}
                           </span>
                         )}
-                        <span className="font-medium">vs {opp.display_name}</span>
-                        <span className="text-xs text-gray-500">({color})</span>
+                        <span className="text-gray-500">vs</span>
+                        <span className="font-medium">{opp.display_name}</span>
+                        <span className="text-xs text-gray-500">({color === 'White' ? 'Black' : 'White'})</span>
                         <a
                           href={`https://chess.com/member/${opp.chess_com_username}`}
                           target="_blank"
