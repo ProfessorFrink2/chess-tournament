@@ -5,9 +5,9 @@ import { supabase } from '@/lib/supabase'
 import { MatchWithPlayers as Match } from '@/lib/database.types'
 
 const resultColor: Record<string, string> = {
-  white_wins: 'text-yellow-300',
-  black_wins: 'text-blue-300',
-  draw: 'text-gray-400',
+  white_wins: 'text-white',
+  black_wins: 'text-white',
+  draw: 'text-white',
   pending: 'text-gray-500',
 }
 
