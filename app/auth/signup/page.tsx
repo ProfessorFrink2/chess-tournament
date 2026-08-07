@@ -95,7 +95,7 @@ export default function SignupPage() {
         <form onSubmit={handleProfileSubmit} className="space-y-4">
           <p className="text-sm text-gray-400">Account created! Now set up your player profile.</p>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Display name</label>
+            <label className="block text-sm text-gray-400 mb-1">Display name (real name)</label>
             <input
               type="text"
               required
