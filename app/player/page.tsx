@@ -219,7 +219,7 @@ export default function PlayerPage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{player.display_name}</span>
-                        <span className="text-xs text-gray-500">({color})</span>
+                        {!isPending && <span className="text-xs text-gray-500">({color})</span>}
                         {!isPending && (
                           <span className={`font-semibold text-sm uppercase tracking-wide ${outcomeColor[outcome]}`}>
                             {outcome}
@@ -227,7 +227,7 @@ export default function PlayerPage() {
                         )}
                         <span className="text-gray-500">vs</span>
                         <span className="font-medium">{opp.display_name}</span>
-                        <span className="text-xs text-gray-500">({color === 'White' ? 'Black' : 'White'})</span>
+                        {!isPending && <span className="text-xs text-gray-500">({color === 'White' ? 'Black' : 'White'})</span>}
                         <a
                           href={`https://chess.com/member/${opp.chess_com_username}`}
                           target="_blank"
