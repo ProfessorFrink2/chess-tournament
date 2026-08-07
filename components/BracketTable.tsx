@@ -30,7 +30,9 @@ function computeStandings(players: Player[], matches: Match[]) {
     .map((p) => ({ player: p, ...scores[p.id] }))
     .sort((a, b) => {
       const pts = (x: typeof a) => x.wins * 2 + x.draws
-      return pts(b) - pts(a)
+      const diff = pts(b) - pts(a)
+      if (diff !== 0) return diff
+      return a.player.display_name.localeCompare(b.player.display_name)
     })
 }
 
