@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { MatchWithPlayers as Match } from '@/lib/database.types'
 
+interface ChessComGame {
+  url: string
+  time_class: string
+  end_time: number
+  white: { username: string; result: string }
+  black: { username: string; result: string }
+}
+
 const resultColor: Record<string, string> = {
   white_wins: 'text-white',
   black_wins: 'text-white',
@@ -29,6 +37,8 @@ function dateColor(m: Match): string {
 export default function MatchList({ matches: initialMatches }: { matches: Match[] }) {
   const [matches, setMatches] = useState(initialMatches)
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null)
+  const [myChessUsername, setMyChessUsername] = useState<string | null>(null)
+  const [chessGames, setChessGames] = useState<ChessComGame[]>([])
   const [reporting, setReporting] = useState<string | null>(null)
   const [gameUrl, setGameUrl] = useState('')
   const [warning, setWarning] = useState('')
@@ -39,12 +49,35 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
       if (!session) return
       const { data } = await supabase
         .from('players')
-        .select('id')
+        .select('id, chess_com_username')
         .eq('user_id', session.user.id)
         .single()
-      if (data) setMyPlayerId((data as { id: string }).id)
+      if (!data) return
+      const p = data as { id: string; chess_com_username: string }
+      setMyPlayerId(p.id)
+      setMyChessUsername(p.chess_com_username)
+      fetch(`/api/chess-com/games?username=${encodeURIComponent(p.chess_com_username)}&limit=200`)
+        .then(r => r.json())
+        .then(({ games }) => setChessGames(games ?? []))
     })
   }, [])
+
+  function foundGamesVs(oppUsername: string): ChessComGame[] {
+    if (!myChessUsername) return []
+    const opp = oppUsername.toLowerCase()
+    return chessGames.filter(g =>
+      g.white.username.toLowerCase() === opp || g.black.username.toLowerCase() === opp
+    )
+  }
+
+  function gameOutcomeLabel(g: ChessComGame): string {
+    if (!myChessUsername) return ''
+    const isWhite = g.white.username.toLowerCase() === myChessUsername.toLowerCase()
+    const me = isWhite ? g.white : g.black
+    if (me.result === 'win') return 'You won'
+    if ((isWhite ? g.black : g.white).result === 'win') return 'You lost'
+    return 'Draw'
+  }
 
   async function submitReport(matchId: string, force = false, manualResult?: string) {
     if (!manualResult && !gameUrl.trim()) { setWarning('Please paste a chess.com game URL or select a result manually.'); return }
@@ -88,6 +121,11 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
               const isMyMatch = myPlayerId && (m.white_player_id === myPlayerId || m.black_player_id === myPlayerId)
               const isPending = m.result === 'pending'
               const isReporting = reporting === m.id
+              const oppUsername = isMyMatch
+                ? (m.white_player_id === myPlayerId ? m.black_player.chess_com_username : m.white_player.chess_com_username)
+                : null
+              const foundGames = (isPending && oppUsername) ? foundGamesVs(oppUsername) : []
+              const hasFound = foundGames.length > 0
 
               return (
                 <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
@@ -137,9 +175,13 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                             if (isReporting) { setReporting(null); setGameUrl(''); setWarning('') }
                             else { setReporting(m.id); setGameUrl(''); setWarning('') }
                           }}
-                          className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700 whitespace-nowrap"
+                          className={`text-xs px-3 py-1.5 rounded border transition-colors whitespace-nowrap ${
+                            hasFound && !isReporting
+                              ? 'bg-green-900 border-green-700 text-green-300 hover:bg-green-800'
+                              : 'bg-gray-800 border-gray-700 hover:bg-gray-700'
+                          }`}
                         >
-                          {isReporting ? 'Cancel' : 'Report result'}
+                          {isReporting ? 'Cancel' : hasFound ? `chess.com result found (${foundGames.length})` : 'Report result'}
                         </button>
                       )}
                     </div>
@@ -147,6 +189,33 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
 
                   {isReporting && (
                     <div className="mt-3 border-t border-gray-800 pt-3 space-y-2">
+                      {hasFound && (
+                        <div className="space-y-1 mb-1">
+                          {foundGames.map((g, i) => {
+                            const date = new Date(g.end_time * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                            const label = gameOutcomeLabel(g)
+                            const labelColor = label === 'You won' ? 'text-green-400' : label === 'You lost' ? 'text-red-400' : 'text-gray-400'
+                            return (
+                              <div key={i} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className={`font-semibold ${labelColor}`}>{label}</span>
+                                  <span className="text-gray-500 capitalize">{g.time_class} · {date}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <a href={g.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View ↗</a>
+                                  <button
+                                    onClick={() => { setGameUrl(g.url); setWarning('') }}
+                                    className="text-amber-400 hover:text-amber-300 hover:underline"
+                                  >
+                                    Use this
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          <div className="border-t border-gray-800 pt-2" />
+                        </div>
+                      )}
                       <p className="text-xs text-gray-400">Paste the chess.com game URL — the result will be read automatically.</p>
                       <div className="flex gap-2">
                         <input
