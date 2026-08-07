@@ -116,6 +116,21 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                           {m.scheduled_start} – {m.scheduled_end}
                         </div>
                       </div>
+                      {isMyMatch && !isPending && (
+                        <button
+                          onClick={async () => {
+                            await fetch('/api/matches/override', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ matchId: m.id, result: 'pending' }),
+                            })
+                            setMatches(prev => prev.map(x => x.id === m.id ? { ...x, result: 'pending', chess_com_game_url: null } : x))
+                          }}
+                          className="text-xs text-gray-500 hover:text-red-400 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
                       {isMyMatch && isPending && (
                         <button
                           onClick={() => {
