@@ -129,12 +129,12 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
 
               return (
                 <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="text-xs text-gray-600 w-4">{m.bracket}</span>
-                      <span>{m.white_player.display_name}</span>
-                      <span className="text-gray-600">vs</span>
-                      <span>{m.black_player.display_name}</span>
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <div className="flex items-center gap-3 text-sm min-w-0">
+                      <span className="text-xs text-gray-600 shrink-0">{m.bracket}</span>
+                      <span className="truncate">{m.white_player.display_name}</span>
+                      <span className="text-gray-600 shrink-0">vs</span>
+                      <span className="truncate">{m.black_player.display_name}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <div className="text-sm text-right">
