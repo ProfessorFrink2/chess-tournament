@@ -45,13 +45,13 @@ export default function SignupPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('Not authenticated'); setLoading(false); return }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from('players').insert({
-      user_id: user.id,
-      chess_com_username: chessUsername.toLowerCase(),
-      display_name: displayName,
-    } as any)
-    if (error) { setError(error.message); setLoading(false); return }
+    const res = await fetch('/api/players/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, chessUsername, displayName }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setError(data.error ?? 'Failed to save profile'); setLoading(false); return }
     router.push('/')
   }
 
