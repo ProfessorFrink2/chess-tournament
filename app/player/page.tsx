@@ -1,0 +1,423 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import { Player, MatchWithPlayers } from '@/lib/database.types'
+import Link from 'next/link'
+
+interface ChessComGame {
+  url: string
+  time_class: string
+  end_time: number
+  white: { username: string; rating: number; result: string }
+  black: { username: string; rating: number; result: string }
+  pgn?: string
+}
+
+const resultLabel: Record<string, string> = {
+  white_wins: 'White wins',
+  black_wins: 'Black wins',
+  draw: 'Draw',
+  pending: 'Pending',
+}
+
+function outcomeFor(match: MatchWithPlayers, playerId: string): 'win' | 'loss' | 'draw' | 'pending' {
+  if (match.result === 'pending') return 'pending'
+  if (match.result === 'draw') return 'draw'
+  const isWhite = match.white_player_id === playerId
+  if (match.result === 'white_wins') return isWhite ? 'win' : 'loss'
+  return isWhite ? 'loss' : 'win'
+}
+
+const outcomeColor = {
+  win: 'text-green-400',
+  loss: 'text-red-400',
+  draw: 'text-gray-400',
+  pending: 'text-gray-500',
+}
+
+export default function PlayerPage() {
+  const router = useRouter()
+  const [player, setPlayer] = useState<Player | null>(null)
+  const [allMatches, setAllMatches] = useState<MatchWithPlayers[]>([])
+  const [chessGames, setChessGames] = useState<ChessComGame[]>([])
+  const [usernameToName, setUsernameToName] = useState<Record<string, string>>({})
+  const [chessLoading, setChessLoading] = useState(false)
+  const [showCount, setShowCount] = useState(20)
+  const [loading, setLoading] = useState(true)
+  const [reporting, setReporting] = useState<string | null>(null)
+  const [gameUrl, setGameUrl] = useState('')
+  const [reportWarning, setReportWarning] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [status, setStatus] = useState('')
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    setLoading(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { router.push('/auth/login'); return }
+
+    const { data: playerData } = await supabase
+      .from('players')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single()
+
+    if (!playerData) { router.push('/auth/signup'); return }
+    const p = playerData as Player
+    setPlayer(p)
+
+    // Build username → display name map for chess.com history
+    const { data: allPlayers } = await supabase.from('players').select('chess_com_username, display_name')
+    if (allPlayers) {
+      const map: Record<string, string> = {}
+      for (const ap of allPlayers as Pick<Player, 'chess_com_username' | 'display_name'>[]) {
+        map[ap.chess_com_username.toLowerCase()] = ap.display_name
+      }
+      setUsernameToName(map)
+    }
+
+    const { data: matches } = await supabase
+      .from('matches')
+      .select(`
+        *,
+        white_player:players!white_player_id(id, display_name, chess_com_username),
+        black_player:players!black_player_id(id, display_name, chess_com_username)
+      `)
+      .or(`white_player_id.eq.${p.id},black_player_id.eq.${p.id}`)
+      .order('scheduled_start', { ascending: true })
+
+    const all = (matches ?? []) as MatchWithPlayers[]
+    setAllMatches(all)
+    setLoading(false)
+
+    // Fetch chess.com game history in background
+    setChessLoading(true)
+    fetch(`/api/chess-com/games?username=${encodeURIComponent(p.chess_com_username)}&limit=200`)
+      .then(r => r.json())
+      .then(({ games }) => setChessGames(games ?? []))
+      .finally(() => setChessLoading(false))
+  }
+
+  async function submitReport(matchId: string, force = false) {
+    if (!gameUrl.trim()) { setReportWarning('Please paste a chess.com game URL.'); return }
+    setSubmitting(true)
+    setReportWarning('')
+    const res = await fetch('/api/matches/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matchId, gameUrl: gameUrl.trim(), force }),
+    })
+    const data = await res.json()
+    setSubmitting(false)
+
+    if (res.status === 409 && data.requiresForce) {
+      setReportWarning(data.warning)
+      return
+    }
+    if (!res.ok) { setReportWarning(data.error ?? 'Failed to submit result.'); return }
+
+    setReporting(null)
+    setGameUrl('')
+    setReportWarning('')
+    setStatus(`Result submitted: ${data.result?.replace('_', ' ')}`)
+    loadData()
+  }
+
+  if (loading) return <p className="text-gray-400">Loading…</p>
+  if (!player) return null
+
+  const opponent = (match: MatchWithPlayers) =>
+    match.white_player_id === player.id ? match.black_player : match.white_player
+
+  const colorFor = (match: MatchWithPlayers) =>
+    match.white_player_id === player.id ? 'White' : 'Black'
+
+  // Find chess.com games already played against a given opponent username
+  function foundGamesFor(oppUsername: string): ChessComGame[] {
+    const opp = oppUsername.toLowerCase()
+    return chessGames.filter(g =>
+      g.white.username.toLowerCase() === opp || g.black.username.toLowerCase() === opp
+    )
+  }
+
+  function gameOutcomeLabel(g: ChessComGame): string {
+    const isWhite = g.white.username.toLowerCase() === player!.chess_com_username.toLowerCase()
+    const me = isWhite ? g.white : g.black
+    if (me.result === 'win') return 'You won'
+    if ((isWhite ? g.black : g.white).result === 'win') return 'You lost'
+    return 'Draw'
+  }
+
+  const reportedUrls = new Set(
+    allMatches.map(m => m.chess_com_game_url).filter(Boolean).map(u => u!.split('?')[0].replace(/\/$/, ''))
+  )
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-10">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{player.display_name}</h1>
+          <a
+            href={`https://chess.com/member/${player.chess_com_username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            @{player.chess_com_username} ↗
+          </a>
+        </div>
+        <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${
+          player.bracket === 'A'
+            ? 'border-amber-500 text-amber-400'
+            : player.bracket === 'B'
+            ? 'border-blue-500 text-blue-400'
+            : 'border-gray-700 text-gray-500'
+        }`}>
+          {player.bracket ? `${player.bracket} Bracket` : 'Unassigned'}
+        </span>
+      </div>
+
+      {status && (
+        <div className="bg-gray-800 border border-gray-700 rounded px-4 py-2 text-sm text-amber-300">
+          {status}
+        </div>
+      )}
+
+      {/* All matches */}
+      <section>
+        <h2 className="text-lg font-semibold mb-3">Matches</h2>
+        {allMatches.length === 0 ? (
+          <p className="text-gray-500 text-sm">No matches scheduled yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {allMatches.map(m => {
+              const opp = opponent(m)
+              const color = colorFor(m)
+              const outcome = outcomeFor(m, player.id)
+              const isPending = m.result === 'pending'
+              const isReporting = reporting === m.id
+              const foundGames = isPending ? foundGamesFor(opp.chess_com_username) : []
+              const hasFound = foundGames.length > 0
+
+              const today = new Date().toISOString().split('T')[0]
+              const isCurrentWeek = m.scheduled_start <= today && m.scheduled_end >= today
+              const isPast = m.scheduled_end < today
+              const dateColor = isPending && isCurrentWeek ? 'text-green-700' : isPending && isPast ? 'text-red-800' : 'text-gray-600'
+
+              return (
+                <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {!isPending && (
+                          <span className={`font-semibold text-sm uppercase tracking-wide ${outcomeColor[outcome]}`}>
+                            {outcome}
+                          </span>
+                        )}
+                        <span className="font-medium">vs {opp.display_name}</span>
+                        <span className="text-xs text-gray-500">({color})</span>
+                        <a
+                          href={`https://chess.com/member/${opp.chess_com_username}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-gray-500 hover:text-gray-300"
+                        >
+                          @{opp.chess_com_username} ↗
+                        </a>
+                      </div>
+                      <div className={`text-xs mt-0.5 ${dateColor}`}>
+                        Week {m.week_number} · {m.scheduled_start} – {m.scheduled_end}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isPending && m.chess_com_game_url && (
+                        <a
+                          href={m.chess_com_game_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-400 hover:underline"
+                        >
+                          View game ↗
+                        </a>
+                      )}
+                      {!isPending && (
+                        <button
+                          onClick={async () => {
+                            await fetch('/api/matches/override', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ matchId: m.id, result: 'pending' }),
+                            })
+                            loadData()
+                          }}
+                          className="text-xs text-gray-500 hover:text-red-400 hover:underline"
+                        >
+                          Clear result
+                        </button>
+                      )}
+                      {isPending && (
+                        <button
+                          onClick={() => {
+                            if (isReporting) { setReporting(null); setGameUrl(''); setReportWarning('') }
+                            else { setReporting(m.id); setGameUrl(''); setReportWarning('') }
+                          }}
+                          className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                            hasFound && !isReporting
+                              ? 'bg-green-900 border-green-700 text-green-300 hover:bg-green-800'
+                              : 'bg-gray-800 border-gray-700 hover:bg-gray-700'
+                          }`}
+                        >
+                          {isReporting ? 'Cancel' : hasFound ? `chess.com result found (${foundGames.length})` : 'Report result'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {isReporting && (
+                    <div className="mt-3 border-t border-gray-800 pt-3 space-y-2">
+                      {hasFound && (
+                        <div className="space-y-1 mb-1">
+                          {foundGames.map((g, i) => {
+                            const date = new Date(g.end_time * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                            const label = gameOutcomeLabel(g)
+                            const labelColor = label === 'You won' ? 'text-green-400' : label === 'You lost' ? 'text-red-400' : 'text-gray-400'
+                            return (
+                              <div key={i} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className={`font-semibold ${labelColor}`}>{label}</span>
+                                  <span className="text-gray-500 capitalize">{g.time_class} · {date}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <a href={g.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View ↗</a>
+                                  <button
+                                    onClick={() => { setGameUrl(g.url); setReportWarning('') }}
+                                    className="text-amber-400 hover:text-amber-300 hover:underline"
+                                  >
+                                    Use this
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          <div className="border-t border-gray-800 pt-2" />
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-400">
+                        Paste the chess.com game URL — the result will be read automatically.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={gameUrl}
+                          onChange={e => { setGameUrl(e.target.value); setReportWarning('') }}
+                          placeholder="https://www.chess.com/game/live/..."
+                          className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-500"
+                        />
+                        <button
+                          onClick={() => submitReport(m.id)}
+                          disabled={submitting}
+                          className="bg-white text-gray-900 text-sm font-medium px-4 py-1.5 rounded hover:bg-gray-100 disabled:opacity-50 shrink-0"
+                        >
+                          {submitting ? 'Checking…' : 'Submit'}
+                        </button>
+                      </div>
+                      {reportWarning && (
+                        <div className="bg-amber-950 border border-amber-700 rounded px-3 py-2 text-sm text-amber-300 flex items-start justify-between gap-3">
+                          <span>{reportWarning}</span>
+                          <button
+                            onClick={() => submitReport(m.id, true)}
+                            className="text-xs underline shrink-0 hover:text-amber-100"
+                          >
+                            Use anyway
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Chess.com game history */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Chess.com History</h2>
+          {chessLoading && <span className="text-xs text-gray-500 animate-pulse">Fetching games…</span>}
+          {!chessLoading && chessGames.length > 0 && (
+            <span className="text-xs text-gray-500">{chessGames.length} games</span>
+          )}
+        </div>
+
+        {!chessLoading && chessGames.length === 0 ? (
+          <p className="text-gray-500 text-sm">No games found on chess.com.</p>
+        ) : (
+          <>
+            <div className="space-y-1">
+              {chessGames.slice(0, showCount).map((g, i) => {
+                const isWhite = g.white.username.toLowerCase() === player.chess_com_username.toLowerCase()
+                const me = isWhite ? g.white : g.black
+                const opp = isWhite ? g.black : g.white
+                const date = new Date(g.end_time * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+
+                let outcome: 'win' | 'loss' | 'draw'
+                if (me.result === 'win') outcome = 'win'
+                else if (opp.result === 'win') outcome = 'loss'
+                else outcome = 'draw'
+                const gameUrlNorm = g.url.split('?')[0].replace(/\/$/, '')
+                const isReported = reportedUrls.has(gameUrlNorm)
+
+                return (
+                  <div key={i} className={`flex items-center justify-between bg-gray-900 border rounded-lg px-4 py-2.5 text-sm ${isReported ? 'border-gray-700 opacity-50' : 'border-gray-800'}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-semibold text-xs uppercase w-8 ${outcomeColor[outcome]}`}>
+                        {outcome}
+                      </span>
+                      <span className="text-gray-300">
+                        vs {usernameToName[opp.username.toLowerCase()] ?? opp.username}
+                        {usernameToName[opp.username.toLowerCase()] && (
+                          <span className="text-gray-600 text-xs ml-1">({opp.username})</span>
+                        )}
+                      </span>
+                      <span className="text-xs text-gray-600">{isWhite ? 'White' : 'Black'}</span>
+                      <span className="text-xs text-gray-600 capitalize">{g.time_class}</span>
+                      {isReported && <span className="text-xs text-gray-500 italic">reported</span>}
+                    </div>
+                    <div className="flex items-center gap-3 text-right">
+                      <span className="text-xs text-gray-500">{date}</span>
+                      <a
+                        href={g.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:underline"
+                      >
+                        View ↗
+                      </a>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {chessGames.length > showCount && (
+              <button
+                onClick={() => setShowCount(c => c + 50)}
+                className="mt-3 w-full text-sm text-gray-400 hover:text-white border border-gray-800 rounded-lg py-2 hover:border-gray-600 transition-colors"
+              >
+                Show more ({chessGames.length - showCount} remaining)
+              </button>
+            )}
+          </>
+        )}
+      </section>
+    </div>
+  )
+}
