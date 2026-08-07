@@ -20,13 +20,28 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     if (existing.user_id) {
-      // Already claimed by someone with a real account — deny
-      return NextResponse.json(
-        { error: 'This chess.com username is already linked to another account.' },
-        { status: 409 }
-      )
+      // Check if the existing account is just a dummy seed account (@chess.local email)
+      const { data: existingProfile } = await db
+        .from('profiles')
+        .select('email')
+        .eq('id', existing.user_id)
+        .maybeSingle()
+
+      const isSeedAccount = existingProfile?.email?.endsWith('@chess.local')
+
+      if (!isSeedAccount) {
+        // Already claimed by a real account — deny
+        return NextResponse.json(
+          { error: 'This chess.com username is already linked to another account.' },
+          { status: 409 }
+        )
+      }
+
+      // Delete the old dummy auth user so the profile row is cleaned up
+      await db.auth.admin.deleteUser(existing.user_id)
     }
-    // Seeded player with no account yet — associate and optionally update display name
+
+    // Seeded player (or just cleared) — associate with the new account
     const { error } = await db
       .from('players')
       .update({ user_id: userId, display_name: displayName } as any)
