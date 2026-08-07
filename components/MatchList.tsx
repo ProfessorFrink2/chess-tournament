@@ -46,14 +46,17 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
     })
   }, [])
 
-  async function submitReport(matchId: string, force = false) {
-    if (!gameUrl.trim()) { setWarning('Please paste a chess.com game URL.'); return }
+  async function submitReport(matchId: string, force = false, manualResult?: string) {
+    if (!manualResult && !gameUrl.trim()) { setWarning('Please paste a chess.com game URL or select a result manually.'); return }
     setSubmitting(true)
     setWarning('')
     const res = await fetch('/api/matches/report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId, gameUrl: gameUrl.trim(), force }),
+      body: JSON.stringify(manualResult
+        ? { matchId, manualResult }
+        : { matchId, gameUrl: gameUrl.trim(), force }
+      ),
     })
     const data = await res.json()
     setSubmitting(false)
@@ -62,8 +65,7 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
     setReporting(null)
     setGameUrl('')
     setWarning('')
-    // Optimistically update result in local state
-    setMatches(prev => prev.map(m => m.id === matchId ? { ...m, result: data.result, chess_com_game_url: gameUrl.trim() } : m))
+    setMatches(prev => prev.map(m => m.id === matchId ? { ...m, result: data.result, chess_com_game_url: manualResult ? null : gameUrl.trim() } : m))
   }
 
   const byWeek = matches.reduce<Record<number, Match[]>>((acc, m) => {
@@ -146,6 +148,25 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                         >
                           {submitting ? 'Checking…' : 'Submit'}
                         </button>
+                      </div>
+                      <div className="border-t border-gray-800 pt-2">
+                        <p className="text-xs text-gray-500 mb-1.5">Or report manually (in-person / game not found):</p>
+                        <div className="flex gap-2">
+                          {([
+                            { label: 'I won', result: m.white_player_id === myPlayerId ? 'white_wins' : 'black_wins' },
+                            { label: 'I lost', result: m.white_player_id === myPlayerId ? 'black_wins' : 'white_wins' },
+                            { label: 'Draw', result: 'draw' },
+                          ] as const).map(({ label, result }) => (
+                            <button
+                              key={result}
+                              onClick={() => submitReport(m.id, false, result)}
+                              disabled={submitting}
+                              className="text-xs px-3 py-1.5 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700 disabled:opacity-50"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                       {warning && (
                         <div className="bg-amber-950 border border-amber-700 rounded px-3 py-2 text-sm text-amber-300 flex items-start justify-between gap-3">

@@ -103,14 +103,17 @@ export default function PlayerPage() {
       .finally(() => setChessLoading(false))
   }
 
-  async function submitReport(matchId: string, force = false) {
-    if (!gameUrl.trim()) { setReportWarning('Please paste a chess.com game URL.'); return }
+  async function submitReport(matchId: string, force = false, manualResult?: string) {
+    if (!manualResult && !gameUrl.trim()) { setReportWarning('Please paste a chess.com game URL or select a result manually.'); return }
     setSubmitting(true)
     setReportWarning('')
     const res = await fetch('/api/matches/report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId, gameUrl: gameUrl.trim(), force }),
+      body: JSON.stringify(manualResult
+        ? { matchId, manualResult }
+        : { matchId, gameUrl: gameUrl.trim(), force }
+      ),
     })
     const data = await res.json()
     setSubmitting(false)
@@ -326,6 +329,25 @@ export default function PlayerPage() {
                         >
                           {submitting ? 'Checking…' : 'Submit'}
                         </button>
+                      </div>
+                      <div className="border-t border-gray-800 pt-2">
+                        <p className="text-xs text-gray-500 mb-1.5">Or report manually (in-person / game not found):</p>
+                        <div className="flex gap-2">
+                          {([
+                            { label: 'I won', result: m.white_player_id === player.id ? 'white_wins' : 'black_wins' },
+                            { label: 'I lost', result: m.white_player_id === player.id ? 'black_wins' : 'white_wins' },
+                            { label: 'Draw', result: 'draw' },
+                          ] as const).map(({ label, result }) => (
+                            <button
+                              key={result}
+                              onClick={() => submitReport(m.id, false, result)}
+                              disabled={submitting}
+                              className="text-xs px-3 py-1.5 rounded border border-gray-700 bg-gray-800 hover:bg-gray-700 disabled:opacity-50"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                       {reportWarning && (
                         <div className="bg-amber-950 border border-amber-700 rounded px-3 py-2 text-sm text-amber-300 flex items-start justify-between gap-3">

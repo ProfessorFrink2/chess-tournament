@@ -7,10 +7,29 @@ const CHESS_COM_GAME_RE = /^https:\/\/www\.chess\.com\/game\/live\/(\d+)/i
 
 export async function POST(req: NextRequest) {
   const db = createServiceClient()
-  const { matchId, gameUrl, force } = await req.json()
+  const { matchId, gameUrl, force, manualResult } = await req.json()
 
-  if (!matchId || !gameUrl) {
-    return NextResponse.json({ error: 'matchId and gameUrl are required' }, { status: 400 })
+  if (!matchId) {
+    return NextResponse.json({ error: 'matchId is required' }, { status: 400 })
+  }
+
+  // Manual result path (no chess.com URL needed)
+  if (manualResult) {
+    const valid: MatchResult[] = ['white_wins', 'black_wins', 'draw']
+    if (!valid.includes(manualResult)) {
+      return NextResponse.json({ error: 'Invalid result' }, { status: 400 })
+    }
+    const { error } = await db.from('matches').update({
+      result: manualResult,
+      chess_com_game_url: null,
+      last_checked_at: new Date().toISOString(),
+    } as any).eq('id', matchId)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true, result: manualResult })
+  }
+
+  if (!gameUrl) {
+    return NextResponse.json({ error: 'gameUrl or manualResult is required' }, { status: 400 })
   }
 
   // Validate URL format
