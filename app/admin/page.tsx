@@ -36,21 +36,16 @@ export default function AdminPage() {
 
   async function loadData() {
     setLoading(true)
-    const [{ data: ps }, { data: ss }, { data: profs }] = await Promise.all([
+    const [{ data: ps }, { data: ss }, adminsRes] = await Promise.all([
       supabase.from('players').select('*').order('display_name'),
       supabase.from('seasons').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, role'),
+      fetch('/api/players/admins').then(r => r.json()),
     ])
     const players = (ps ?? []) as Player[]
     const seasons = (ss ?? []) as Season[]
     setPlayers(players)
     setSeasons(seasons)
-    const adminIds = new Set(
-      ((profs ?? []) as { id: string; role: string }[])
-        .filter(p => p.role === 'admin')
-        .map(p => p.id)
-    )
-    setAdminUserIds(adminIds)
+    setAdminUserIds(new Set((adminsRes.adminIds ?? []) as string[]))
     const active = seasons.find((s) => s.is_active) ?? null
     setActiveSeason(active)
 
