@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [newSeason, setNewSeason] = useState({ name: '', start_date: '' })
   const [status, setStatus] = useState('')
+  const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     checkAdmin()
@@ -35,14 +36,21 @@ export default function AdminPage() {
 
   async function loadData() {
     setLoading(true)
-    const [{ data: ps }, { data: ss }] = await Promise.all([
+    const [{ data: ps }, { data: ss }, { data: profs }] = await Promise.all([
       supabase.from('players').select('*').order('display_name'),
       supabase.from('seasons').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, role'),
     ])
     const players = (ps ?? []) as Player[]
     const seasons = (ss ?? []) as Season[]
     setPlayers(players)
     setSeasons(seasons)
+    const adminIds = new Set(
+      ((profs ?? []) as { id: string; role: string }[])
+        .filter(p => p.role === 'admin')
+        .map(p => p.id)
+    )
+    setAdminUserIds(adminIds)
     const active = seasons.find((s) => s.is_active) ?? null
     setActiveSeason(active)
 
@@ -115,6 +123,21 @@ export default function AdminPage() {
       body: JSON.stringify({ matchId, result }),
     })
     setMatches((prev) => prev.map((m) => m.id === matchId ? { ...m, result } : m))
+  }
+
+  async function setRole(targetUserId: string, role: 'admin' | 'user') {
+    const res = await fetch('/api/players/set-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUserId, role }),
+    })
+    if (!res.ok) { setStatus('Failed to update role'); return }
+    setAdminUserIds(prev => {
+      const next = new Set(prev)
+      if (role === 'admin') next.add(targetUserId)
+      else next.delete(targetUserId)
+      return next
+    })
   }
 
   async function triggerCronManually() {
@@ -201,6 +224,38 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Manage Admins */}
+      <section>
+        <h2 className="text-lg font-semibold mb-3">Manage Admins</h2>
+        <div className="space-y-1">
+          {players.filter(p => p.user_id).map((p) => {
+            const isAdmin = p.user_id ? adminUserIds.has(p.user_id) : false
+            return (
+              <div key={p.id} className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm">
+                <span>
+                  {p.display_name}
+                  <span className="text-gray-500 text-xs ml-1">({p.chess_com_username})</span>
+                  {isAdmin && <span className="ml-2 text-xs text-amber-400 font-medium">Admin</span>}
+                </span>
+                <button
+                  onClick={() => p.user_id && setRole(p.user_id, isAdmin ? 'user' : 'admin')}
+                  className={`text-xs px-3 py-1 rounded border transition-colors ${
+                    isAdmin
+                      ? 'border-red-700 text-red-400 hover:bg-red-900'
+                      : 'border-gray-700 text-gray-400 hover:bg-gray-800'
+                  }`}
+                >
+                  {isAdmin ? 'Remove admin' : 'Make admin'}
+                </button>
+              </div>
+            )
+          })}
+          {players.filter(p => p.user_id).length === 0 && (
+            <p className="text-gray-500 text-sm">No registered players yet.</p>
+          )}
         </div>
       </section>
 
