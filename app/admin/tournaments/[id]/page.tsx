@@ -361,6 +361,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         if (!otherInSrc) {
           // Source match now completely empty — delete it.
           await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
+          setMatches((prev) => prev.filter((m) => m.id !== srcMatchId))
         } else {
           // One player remains alone — null out the moved side and auto-advance the remaining player.
           await updateMatch(srcMatchId, srcSide === 'a'
@@ -369,9 +370,6 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         }
       }
     }
-
-    // Reload to get fresh joined player objects (display_name, not just IDs).
-    load()
   }
 
   async function clearPlayerFromSlot(matchId: string, side: 'a' | 'b') {
@@ -462,11 +460,22 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase.from('tournament_matches').update(patch as any).eq('id', matchId)
     if (error) { setStatus('Error: ' + error.message); return }
-    // Only do optimistic updates for score/winner — player moves need a reload
-    // to get fresh joined player objects (display_name). Caller does load().
-    if ('score_a' in patch || 'score_b' in patch || 'winner_id' in patch) {
-      setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, ...patch } : m)))
-    }
+    setMatches((prev) => prev.map((m) => {
+      if (m.id !== matchId) return m
+      const next = { ...m, ...patch }
+      // Keep joined player objects in sync with any ID changes.
+      if ('player_a_id' in patch) {
+        next.player_a = patch.player_a_id
+          ? (players.find((p) => p.id === patch.player_a_id) ?? null)
+          : null
+      }
+      if ('player_b_id' in patch) {
+        next.player_b = patch.player_b_id
+          ? (players.find((p) => p.id === patch.player_b_id) ?? null)
+          : null
+      }
+      return next
+    }))
   }
 
   if (loading) return <p className="text-gray-400">Loading…</p>
