@@ -255,8 +255,35 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     load()
   }
 
-  async function dropPlayerIntoSlot(matchId: string, side: 'a' | 'b', playerId: string) {
-    await updateMatch(matchId, side === 'a' ? { player_a_id: playerId } : { player_b_id: playerId })
+  async function dropPlayerIntoSlot(
+    destMatchId: string, destSide: 'a' | 'b', playerId: string,
+    srcMatchId?: string, srcSide?: 'a' | 'b'
+  ) {
+    // Write destination first, then clear source (if it's a different slot).
+    await updateMatch(destMatchId, destSide === 'a' ? { player_a_id: playerId } : { player_b_id: playerId })
+    if (srcMatchId && srcSide && (srcMatchId !== destMatchId || srcSide !== destSide)) {
+      await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+    }
+  }
+
+  async function resetBracketPlayers() {
+    // Re-assign players from entrant seeds without regenerating the bracket structure.
+    const divEntrants = entrants.filter(
+      (e) => e.division === activeDivision && e.bracket_kind === entrantBracketFor(activeKind)
+    )
+    const bySeed = new Map(divEntrants.map((e) => [e.seed, e.player_id]))
+    const updates = divisionMatches
+      .filter((m) => !m.is_medal_game)
+      .map((m) => ({
+        id: m.id,
+        player_a_id: m.seed_a != null ? (bySeed.get(m.seed_a) ?? null) : null,
+        player_b_id: m.seed_b != null ? (bySeed.get(m.seed_b) ?? null) : null,
+      }))
+    setStatus('Resetting…')
+    for (const u of updates) {
+      await updateMatch(u.id, { player_a_id: u.player_a_id, player_b_id: u.player_b_id })
+    }
+    setStatus('Reset to seeded positions.')
   }
 
   async function generateBracket() {
@@ -466,9 +493,14 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
           <div className="mt-4 space-y-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs uppercase tracking-wide text-gray-500">Match results</h3>
-              <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
-                Regenerate bracket
-              </button>
+              <div className="flex gap-3">
+                <button onClick={resetBracketPlayers} className="text-xs text-gray-600 hover:text-gray-400 underline">
+                  Reset players
+                </button>
+                <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
+                  Regenerate bracket
+                </button>
+              </div>
             </div>
             {divisionMatches.filter((m) => !m.is_medal_game).map((m) => (
               <div key={m.id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm flex-wrap">

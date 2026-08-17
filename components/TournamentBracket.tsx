@@ -73,7 +73,11 @@ function ByeCard({ player, seed }: { player: { display_name: string } | null; se
   )
 }
 
-export type SlotDropHandler = (matchId: string, side: 'a' | 'b', playerId: string) => void
+// src* identify where the player came FROM (so the drop handler can clear it).
+export type SlotDropHandler = (
+  destMatchId: string, destSide: 'a' | 'b', playerId: string,
+  srcMatchId?: string, srcSide?: 'a' | 'b'
+) => void
 
 function Side({
   player,
@@ -107,6 +111,8 @@ function Side({
       draggable={isDragSource}
       onDragStart={isDragSource ? (e) => {
         e.dataTransfer.setData('playerId', (player as { id?: string }).id ?? '')
+        e.dataTransfer.setData('srcMatchId', matchId!)
+        e.dataTransfer.setData('srcSide', side!)
         e.dataTransfer.effectAllowed = 'move'
       } : undefined}
       className={`flex items-center justify-between gap-2 px-2 py-0.5 transition-colors ${
@@ -119,7 +125,10 @@ function Side({
         e.preventDefault()
         setDragOver(false)
         const pid = e.dataTransfer.getData('playerId')
-        if (pid) onSlotDrop!(matchId!, side!, pid)
+        const srcMatchId = e.dataTransfer.getData('srcMatchId') || undefined
+        const srcSideRaw = e.dataTransfer.getData('srcSide')
+        const srcSide = (srcSideRaw === 'a' || srcSideRaw === 'b') ? srcSideRaw : undefined
+        if (pid) onSlotDrop!(matchId!, side!, pid, srcMatchId, srcSide)
       } : undefined}
     >
       <span className={`truncate ${wide ? 'max-w-40' : ''}`}>
