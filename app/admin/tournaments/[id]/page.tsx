@@ -231,13 +231,19 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
       return
     }
 
+    // Insert only players not already in this bracket (avoids onConflict issues
+    // with the functional unique index on coalesce(division, '-')).
+    const alreadyIn = new Set(
+      entrants
+        .filter((e) => e.division === activeDivision && e.bracket_kind === entrantBracketFor(activeKind))
+        .map((e) => e.player_id)
+    )
+    const newRows = rows.filter((r) => !alreadyIn.has(r.player_id))
+    if (newRows.length === 0) { setStatus('All players already added.'); return }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await supabase.from('tournament_entrants').upsert(rows as any, {
-      onConflict: 'tournament_id,division,bracket_kind,player_id',
-      ignoreDuplicates: true,
-    })
+    const { error } = await supabase.from('tournament_entrants').insert(newRows as any)
     if (error) { setStatus('Error: ' + error.message); return }
-    setStatus(`Imported ${rows.length} entrants from season standings.`)
+    setStatus(`Imported ${newRows.length} entrants from season standings.`)
     load()
   }
 
