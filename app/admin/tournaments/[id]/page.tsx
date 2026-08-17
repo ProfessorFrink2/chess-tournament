@@ -74,14 +74,41 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     setPlayers((ps ?? []) as Player[])
     setActiveDivision((prev) => prev ?? divs[0]?.division ?? null)
 
-    // Load season standings if this tournament is linked to a season.
+    // Load season participants if this tournament is linked to a season.
+    // Historic seasons store results in season_standings; live seasons store
+    // them in matches (white_player_id / black_player_id). Try standings first,
+    // fall back to distinct players from matches.
     if (tournament?.season_id) {
       const { data: standings } = await supabase
         .from('season_standings')
         .select('*, player:players(id, display_name)')
         .eq('season_id', tournament.season_id)
         .order('rank')
-      setSeasonStandings((standings ?? []) as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+      if (standings && standings.length > 0) {
+        setSeasonStandings((standings) as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+      } else {
+        // Live season: derive participants from match history.
+        const { data: matchRows } = await supabase
+          .from('matches')
+          .select('white_player_id, black_player_id')
+          .eq('season_id', tournament.season_id)
+        const ids = new Set<string>()
+        for (const m of matchRows ?? []) {
+          if (m.white_player_id) ids.add(m.white_player_id)
+          if (m.black_player_id) ids.add(m.black_player_id)
+        }
+        // Synthesise minimal SeasonStanding-shaped rows so seasonPlayerIds works.
+        const synthetic = [...ids].map((pid) => ({
+          id: pid,
+          season_id: tournament.season_id,
+          division: '',
+          player_id: pid,
+          rank: 0,
+          wins: 0, draws: 0, losses: 0, points: 0,
+          player: { id: pid, display_name: '' },
+        }))
+        setSeasonStandings(synthetic as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+      }
     } else {
       setSeasonStandings([])
     }
