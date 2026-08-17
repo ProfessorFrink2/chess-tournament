@@ -91,24 +91,44 @@ function ByeCard({ player, seed }: { player: { display_name: string } | null; se
   )
 }
 
+type SlotDropHandler = (matchId: string, side: 'a' | 'b', playerId: string) => void
+
 function Side({
   player,
   seed,
   score,
   isWinner,
   decided,
+  matchId,
+  side,
+  onSlotDrop,
 }: {
   player: { display_name: string } | null
   seed: number | null
   score: number | null
   isWinner: boolean
   decided: boolean
+  matchId?: string
+  side?: 'a' | 'b'
+  onSlotDrop?: SlotDropHandler
 }) {
+  const [dragOver, setDragOver] = useState(false)
+  const isDropTarget = !!onSlotDrop && !!matchId && !!side
+
   return (
     <div
-      className={`flex items-center justify-between gap-2 px-2 py-0.5 ${
+      className={`flex items-center justify-between gap-2 px-2 py-0.5 transition-colors ${
+        dragOver ? 'bg-blue-900/40' :
         isWinner ? 'text-white font-semibold' : decided ? 'text-gray-500' : 'text-gray-300'
-      }`}
+      } ${isDropTarget ? 'cursor-pointer' : ''}`}
+      onDragOver={isDropTarget ? (e) => { e.preventDefault(); setDragOver(true) } : undefined}
+      onDragLeave={isDropTarget ? () => setDragOver(false) : undefined}
+      onDrop={isDropTarget ? (e) => {
+        e.preventDefault()
+        setDragOver(false)
+        const pid = e.dataTransfer.getData('playerId')
+        if (pid) onSlotDrop!(matchId!, side!, pid)
+      } : undefined}
     >
       <span className="truncate">
         {seed != null && <span className="text-gray-600 mr-1 tabular-nums">({seed})</span>}
@@ -119,7 +139,13 @@ function Side({
   )
 }
 
-function MatchCard({ m }: { m: TournamentMatchWithPlayers }) {
+function MatchCard({
+  m,
+  onSlotDrop,
+}: {
+  m: TournamentMatchWithPlayers
+  onSlotDrop?: SlotDropHandler
+}) {
   const decided = m.winner_id != null
   return (
     <div className="border border-gray-800 rounded bg-gray-900 text-sm divide-y divide-gray-800 w-44 max-w-full">
@@ -129,6 +155,7 @@ function MatchCard({ m }: { m: TournamentMatchWithPlayers }) {
         score={m.score_a}
         isWinner={decided && m.winner_id === m.player_a_id}
         decided={decided}
+        matchId={m.id} side="a" onSlotDrop={onSlotDrop}
       />
       <Side
         player={m.player_b}
@@ -136,6 +163,7 @@ function MatchCard({ m }: { m: TournamentMatchWithPlayers }) {
         score={m.score_b}
         isWinner={decided && m.winner_id === m.player_b_id}
         decided={decided}
+        matchId={m.id} side="b" onSlotDrop={onSlotDrop}
       />
     </div>
   )
@@ -288,9 +316,11 @@ const ROW_H = 58
 export default function TournamentBracket({
   matches,
   bracketKind = 'championship',
+  onSlotDrop,
 }: {
   matches: TournamentMatchWithPlayers[]
   bracketKind?: string
+  onSlotDrop?: SlotDropHandler
 }) {
   // Memoised: these feed recompute's dependency list, and a fresh array on
   // every render would make the measure effect loop.
@@ -496,7 +526,7 @@ export default function TournamentBracket({
                       style={{ top: (rowOf.get(m.id) ?? 0) * ROW_H }}
                     >
                       <div ref={setCardRef(m.id)}>
-                        <MatchCard m={m} />
+                        <MatchCard m={m} onSlotDrop={onSlotDrop} />
                       </div>
                     </div>
                   ))}
@@ -525,7 +555,7 @@ export default function TournamentBracket({
           <h4 className="text-xs uppercase tracking-wide text-gray-500">
             {m.label ?? 'Medal game'}
           </h4>
-          <MatchCard m={m} />
+          <MatchCard m={m} onSlotDrop={onSlotDrop} />
         </div>
       ))}
     </div>

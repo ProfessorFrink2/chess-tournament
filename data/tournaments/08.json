@@ -3,579 +3,200 @@
   "name": "Tournament 8",
   "format": "single_elim",
   "sources": [
+    "fwhereareseason8brackets.zip",
     "TournamentResults.pdf"
   ],
-  "notes": [
-    "RECOVERED ENTIRELY FROM TournamentResults.pdf. No standings sheet, bracket or email for tournament 8 exists anywhere in the source folder \u2014 it is the one tournament with no primary source of its own.",
-    "Only finishing positions survive. There are no matches, no scores, no seeds and no league standings, so none are recorded.",
-    "Three divisions, A, B and C, inferred from the PDF's 'in B' / 'in C' suffixes; an unsuffixed number means the A division.",
-    "Format is NOT recorded anywhere. 'single_elim' is inferred from the neighbouring tournaments 7 and 10, which were seeded knockouts with divisions. The PDF header marks tournaments 9, 11, 13 and 15 as random wheel and does NOT mark tournament 8, so it was at least not a random-wheel event.",
-    "SOURCE ANOMALY in the A division: the PDF gives no 8th place and lists 9th TWICE, for Nathan and for Andy. Verified by cropping and upscaling those two cells. Transcribed exactly as printed rather than silently renumbering.",
-    "Aaron, Trevor, Elise and Sandra have no chess.com username anywhere in the dataset."
-  ],
   "season": null,
-  "_placement_anomaly": {
-    "A": "No 8th place; 9th is listed twice (Nathan and Andy). Faithful to the source."
-  },
   "roster": [
-    {
-      "name": "Alicia",
-      "source": "TournamentResults.pdf",
-      "username": "ahensch"
-    },
-    {
-      "name": "Luis",
-      "source": "TournamentResults.pdf",
-      "username": "luischas"
-    },
-    {
-      "name": "Bogdan",
-      "source": "TournamentResults.pdf",
-      "username": "Bohdan7770"
-    },
-    {
-      "name": "Shawn B",
-      "source": "TournamentResults.pdf",
-      "username": "shawnmatthewbell"
-    },
-    {
-      "name": "Rob",
-      "source": "TournamentResults.pdf",
-      "username": "Robmon13"
-    },
-    {
-      "name": "Michael",
-      "source": "TournamentResults.pdf",
-      "username": "GeorgeDubyuh"
-    },
-    {
-      "name": "Jamie",
-      "source": "TournamentResults.pdf",
-      "username": "CowMaster66"
-    },
-    {
-      "name": "Nathan",
-      "source": "TournamentResults.pdf",
-      "username": "fgrrghg"
-    },
-    {
-      "name": "Andy",
-      "source": "TournamentResults.pdf",
-      "username": "randiddly"
-    },
-    {
-      "name": "Kyle W",
-      "source": "TournamentResults.pdf",
-      "username": "kylewaite"
-    },
-    {
-      "name": "Shawn T",
-      "source": "TournamentResults.pdf",
-      "username": "DreamSlayer"
-    },
-    {
-      "name": "James W",
-      "source": "TournamentResults.pdf",
-      "username": "Kharon678910"
-    },
-    {
-      "name": "Taras",
-      "source": "TournamentResults.pdf",
-      "username": "Dambl"
-    },
-    {
-      "name": "Justin B",
-      "source": "TournamentResults.pdf",
-      "username": "WhiteKnightching"
-    },
-    {
-      "name": "Anatoliy",
-      "source": "TournamentResults.pdf",
-      "username": "Anatiliy111"
-    },
-    {
-      "name": "Terry",
-      "source": "TournamentResults.pdf",
-      "username": "temcgrat"
-    },
-    {
-      "name": "Keyes",
-      "source": "TournamentResults.pdf",
-      "username": "Bishopstip"
-    },
-    {
-      "name": "Rich",
-      "source": "TournamentResults.pdf",
-      "username": "ohwhenthesaints01"
-    },
-    {
-      "name": "Lenny",
-      "source": "TournamentResults.pdf",
-      "username": "kmitchell2"
-    },
-    {
-      "name": "Brendan",
-      "source": "TournamentResults.pdf",
-      "username": "Bthompson35"
-    },
-    {
-      "name": "Andrew Champo",
-      "source": "TournamentResults.pdf",
-      "username": "ElChampoLibre"
-    },
-    {
-      "name": "Axel",
-      "source": "TournamentResults.pdf",
-      "username": "ax359"
-    },
-    {
-      "name": "James",
-      "source": "TournamentResults.pdf",
-      "username": "aznwiteguy"
-    },
-    {
-      "name": "Jayson",
-      "source": "TournamentResults.pdf",
-      "username": "jaysondc"
-    },
-    {
-      "name": "Dan",
-      "source": "TournamentResults.pdf",
-      "username": "djdanidu"
-    },
-    {
-      "name": "Matt",
-      "source": "TournamentResults.pdf",
-      "username": "marrmalian"
-    },
-    {
-      "name": "Aaron",
-      "source": "TournamentResults.pdf",
-      "_comment": "No chess.com username is recorded for this player anywhere in the dataset."
-    },
-    {
-      "name": "Mark S",
-      "source": "TournamentResults.pdf",
-      "username": "bobark"
-    },
-    {
-      "name": "Gustavo",
-      "source": "TournamentResults.pdf",
-      "username": "dlainterpolgustavo2"
-    },
-    {
-      "name": "Alejandra",
-      "source": "TournamentResults.pdf",
-      "username": "aOlli"
-    },
-    {
-      "name": "Trevor",
-      "source": "TournamentResults.pdf",
-      "_comment": "No chess.com username is recorded for this player anywhere in the dataset."
-    },
-    {
-      "name": "Shapes",
-      "source": "TournamentResults.pdf",
-      "username": "shapesies"
-    },
-    {
-      "name": "Elise",
-      "source": "TournamentResults.pdf",
-      "_comment": "No chess.com username is recorded for this player anywhere in the dataset."
-    },
-    {
-      "name": "Darius",
-      "source": "TournamentResults.pdf",
-      "username": "30FootPullUp"
-    },
-    {
-      "name": "Krista",
-      "source": "TournamentResults.pdf",
-      "username": "codiwomple"
-    },
-    {
-      "name": "Natno",
-      "source": "TournamentResults.pdf",
-      "username": "Fancycheckers2020"
-    },
-    {
-      "name": "Charlie",
-      "source": "TournamentResults.pdf",
-      "username": "charliemichigan"
-    },
-    {
-      "name": "Sandra",
-      "source": "TournamentResults.pdf",
-      "_comment": "No chess.com username is recorded for this player anywhere in the dataset."
-    }
+    { "name": "Luilli", "username": "luischas" },
+    { "name": "Alicia", "username": "ahensch" },
+    { "name": "Jamie", "username": "CowMaster66" },
+    { "name": "Shawn B", "username": "shawnmatthewbell" },
+    { "name": "Andy", "username": "randiddly" },
+    { "name": "Nathan", "username": "fgrrghg" },
+    { "name": "Bogdan", "username": "Bohdan7770" },
+    { "name": "Kyle W", "username": "kylewaite" },
+    { "name": "Michael", "username": "GeorgeDubyuh" },
+    { "name": "Rob", "username": "Robmon13" },
+    { "name": "Shawn T", "username": "DreamSlayer" },
+    { "name": "James W", "username": "Kharon678910" },
+    { "name": "Taras", "username": "Dambl" },
+    { "name": "Justin B", "username": "WhiteKnightching" },
+    { "name": "Anatoliy", "username": "Anatiliy111" },
+    { "name": "Terry", "username": "temcgrat" },
+    { "name": "Keyes", "username": "Bishopstip" },
+    { "name": "Lenny", "username": "kmitchell2" },
+    { "name": "Rich", "username": "ohwhenthesaints01" },
+    { "name": "Brendan", "username": "Bthompson35" },
+    { "name": "Axel", "username": "ax359" },
+    { "name": "Andrew Champo", "username": "ElChampoLibre" },
+    { "name": "James", "username": "aznwiteguy" },
+    { "name": "Matt", "username": "marrmalian" },
+    { "name": "Jayson", "username": "jaysondc" },
+    { "name": "Aaron" },
+    { "name": "Dan", "username": "djdanidu" },
+    { "name": "Mark S", "username": "bobark" },
+    { "name": "Trevor", "username": "thejimhillerofchess" },
+    { "name": "Alejandra", "username": "aOlli" },
+    { "name": "Shapes", "username": "shapesies" },
+    { "name": "Elise", "username": "eliseatl" },
+    { "name": "Gustavo", "username": "dlainterpolgustavo2" },
+    { "name": "Darius", "username": "30FootPullUp" },
+    { "name": "Krista", "username": "codiwomple" },
+    { "name": "Natno", "username": "Fancycheckers2020" },
+    { "name": "Charlie", "username": "charliemichigan" }
   ],
-  "standings": {},
+  "standings": {
+    "A": [
+      { "rank": 1,  "name": "Luilli",       "wins": 12, "draws": 1, "losses": 2,  "points": 25 },
+      { "rank": 2,  "name": "Alicia",        "wins": 11, "draws": 0, "losses": 5,  "points": 22 },
+      { "rank": 3,  "name": "Jamie",         "wins": 9,  "draws": 0, "losses": 7,  "points": 18 },
+      { "rank": 4,  "name": "Shawn B",       "wins": 9,  "draws": 0, "losses": 6,  "points": 18 },
+      { "rank": 5,  "name": "Andy",          "wins": 8,  "draws": 2, "losses": 5,  "points": 18 },
+      { "rank": 6,  "name": "Nathan",        "wins": 8,  "draws": 1, "losses": 7,  "points": 17 },
+      { "rank": 7,  "name": "Bogdan",        "wins": 8,  "draws": 0, "losses": 6,  "points": 16 },
+      { "rank": 8,  "name": "Kyle W",        "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 9,  "name": "Michael",       "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 10, "name": "Rob",           "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 11, "name": "Shawn T",       "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 12, "name": "James W",       "wins": 6,  "draws": 1, "losses": 8,  "points": 13 },
+      { "rank": 13, "name": "Taras",         "wins": 6,  "draws": 1, "losses": 8,  "points": 13 },
+      { "rank": 14, "name": "Justin B",      "wins": 6,  "draws": 0, "losses": 8,  "points": 12 },
+      { "rank": 15, "name": "Anatoliy",      "wins": 5,  "draws": 0, "losses": 10, "points": 10 },
+      { "rank": 16, "name": "Terry",         "wins": 4,  "draws": 0, "losses": 11, "points": 8  },
+      { "rank": 17, "name": "Keyes",         "wins": 1,  "draws": 0, "losses": 14, "points": 2  }
+    ],
+    "B": [
+      { "rank": 1,  "name": "Lenny",         "wins": 10, "draws": 1, "losses": 0,  "points": 21 },
+      { "rank": 2,  "name": "Rich",          "wins": 8,  "draws": 0, "losses": 2,  "points": 16 },
+      { "rank": 3,  "name": "Brendan",       "wins": 8,  "draws": 0, "losses": 3,  "points": 16 },
+      { "rank": 4,  "name": "Axel",          "wins": 7,  "draws": 1, "losses": 3,  "points": 15 },
+      { "rank": 5,  "name": "Andrew Champo", "wins": 7,  "draws": 1, "losses": 3,  "points": 15 },
+      { "rank": 6,  "name": "James",         "wins": 6,  "draws": 0, "losses": 5,  "points": 12 },
+      { "rank": 7,  "name": "Matt",          "wins": 6,  "draws": 0, "losses": 5,  "points": 12 },
+      { "rank": 8,  "name": "Jayson",        "wins": 5,  "draws": 1, "losses": 5,  "points": 11 },
+      { "rank": 9,  "name": "Aaron",         "wins": 4,  "draws": 2, "losses": 6,  "points": 10 },
+      { "rank": 10, "name": "Dan",           "wins": 4,  "draws": 1, "losses": 6,  "points": 9  },
+      { "rank": 11, "name": "Mark S",        "wins": 2,  "draws": 1, "losses": 8,  "points": 5  }
+    ],
+    "C": [
+      { "rank": 1,  "name": "Trevor",        "wins": 11, "draws": 0, "losses": 2,  "points": 22 },
+      { "rank": 2,  "name": "Alejandra",     "wins": 10, "draws": 0, "losses": 3,  "points": 20 },
+      { "rank": 3,  "name": "Shapes",        "wins": 10, "draws": 0, "losses": 3,  "points": 20 },
+      { "rank": 4,  "name": "Elise",         "wins": 10, "draws": 0, "losses": 3,  "points": 20 },
+      { "rank": 5,  "name": "Gustavo",       "wins": 10, "draws": 0, "losses": 3,  "points": 20 },
+      { "rank": 6,  "name": "Darius",        "wins": 9,  "draws": 0, "losses": 4,  "points": 18 },
+      { "rank": 7,  "name": "Krista",        "wins": 8,  "draws": 0, "losses": 5,  "points": 16 },
+      { "rank": 8,  "name": "Natno",         "wins": 7,  "draws": 0, "losses": 6,  "points": 14 },
+      { "rank": 9,  "name": "Charlie",       "wins": 6,  "draws": 0, "losses": 7,  "points": 12 }
+    ]
+  },
   "divisions": {
     "A": {
       "format": "single_elim",
       "entrants": [
-        {
-          "name": "Alicia",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Luis",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Bogdan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Shawn B",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Rob",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Michael",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Jamie",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Nathan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Andy",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Kyle W",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Shawn T",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "James W",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Taras",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Justin B",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Anatoliy",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Terry",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Keyes",
-          "source": "TournamentResults.pdf"
-        }
+        { "name": "Luilli",   "seed": 1  },
+        { "name": "Alicia",   "seed": 2  },
+        { "name": "Shawn B",  "seed": 3  },
+        { "name": "Bogdan",   "seed": 4  },
+        { "name": "Rob",      "seed": 5  },
+        { "name": "Michael",  "seed": 6  },
+        { "name": "Jamie",    "seed": 7  },
+        { "name": "Andy",     "seed": 8  },
+        { "name": "Nathan",   "seed": 9  },
+        { "name": "Kyle W",   "seed": 10 },
+        { "name": "Shawn T",  "seed": 11 },
+        { "name": "James W",  "seed": 12 }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Andy",    "seed_a": 8,  "b": "Nathan",  "seed_b": 9,  "winner": "Andy"   },
+        { "round": 1, "slot": 2, "a": "Rob",     "seed_a": 5,  "b": "James W", "seed_b": 12, "winner": "Rob"    },
+        { "round": 1, "slot": 3, "a": "Jamie",   "seed_a": 7,  "b": "Kyle W",  "seed_b": 10, "winner": "Jamie"  },
+        { "round": 1, "slot": 4, "a": "Michael", "seed_a": 6,  "b": "Shawn T", "seed_b": 11, "winner": "Michael"},
+        { "round": 2, "slot": 1, "a": "Luilli",  "seed_a": 1,  "b": "Andy",    "seed_b": 8,  "winner": "Luilli" },
+        { "round": 2, "slot": 2, "a": "Bogdan",  "seed_a": 4,  "b": "Rob",     "seed_b": 5,  "winner": "Bogdan" },
+        { "round": 2, "slot": 3, "a": "Alicia",  "seed_a": 2,  "b": "Jamie",   "seed_b": 7,  "winner": "Alicia" },
+        { "round": 2, "slot": 4, "a": "Shawn B", "seed_a": 3,  "b": "Michael", "seed_b": 6,  "winner": "Shawn B"},
+        { "round": 3, "slot": 1, "a": "Luilli",  "b": "Bogdan",  "winner": "Luilli" },
+        { "round": 3, "slot": 2, "a": "Alicia",  "b": "Shawn B", "winner": "Alicia" },
+        { "round": 4, "slot": 1, "a": "Luilli",  "b": "Alicia",  "winner": "Alicia" },
+        { "round": 5, "slot": 1, "a": "Bogdan",  "seed_a": 4, "b": "Shawn B", "seed_b": 3, "winner": "Bogdan", "medal_game": true, "label": "Bronze medal game" }
       ],
       "placements": [
-        {
-          "place": 1,
-          "name": "Alicia",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 2,
-          "name": "Luis",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 3,
-          "name": "Bogdan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 4,
-          "name": "Shawn B",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 5,
-          "name": "Rob",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 6,
-          "name": "Michael",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 7,
-          "name": "Jamie",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 9,
-          "name": "Nathan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 9,
-          "name": "Andy",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 10,
-          "name": "Kyle W",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 11,
-          "name": "Shawn T",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 12,
-          "name": "James W",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 13,
-          "name": "Taras",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 14,
-          "name": "Justin B",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 15,
-          "name": "Anatoliy",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 16,
-          "name": "Terry",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 17,
-          "name": "Keyes",
-          "source": "TournamentResults.pdf"
-        }
-      ],
-      "matches": []
+        { "place": 1,  "name": "Alicia"  },
+        { "place": 2,  "name": "Luilli"  },
+        { "place": 3,  "name": "Bogdan"  },
+        { "place": 4,  "name": "Shawn B" },
+        { "place": 5,  "name": "Rob"     },
+        { "place": 6,  "name": "Michael" },
+        { "place": 7,  "name": "Jamie"   },
+        { "place": 8,  "name": "Andy"    },
+        { "place": 9,  "name": "Nathan"  },
+        { "place": 10, "name": "Kyle W"  },
+        { "place": 11, "name": "Shawn T" },
+        { "place": 12, "name": "James W" }
+      ]
     },
     "B": {
       "format": "single_elim",
+      "_note": "Combined B+C playoff. Gustavo (C div rank 5) and Trevor (C div rank 1) entered as seeds 8 and 10.",
       "entrants": [
-        {
-          "name": "Rich",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Lenny",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Brendan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Andrew Champo",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Axel",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "James",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Jayson",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Dan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Matt",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Aaron",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Mark S",
-          "source": "TournamentResults.pdf"
-        }
+        { "name": "Lenny",         "seed": 1  },
+        { "name": "Brendan",       "seed": 2  },
+        { "name": "Rich",          "seed": 3  },
+        { "name": "Axel",          "seed": 4  },
+        { "name": "Andrew Champo", "seed": 5  },
+        { "name": "James",         "seed": 6  },
+        { "name": "Jayson",        "seed": 7  },
+        { "name": "Gustavo",       "seed": 8  },
+        { "name": "Dan",           "seed": 9  },
+        { "name": "Trevor",        "seed": 10 }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Gustavo",       "seed_a": 8,  "b": "Dan",     "seed_b": 9,  "winner": "Dan"           },
+        { "round": 1, "slot": 2, "a": "Jayson",        "seed_a": 7,  "b": "Trevor",  "seed_b": 10, "winner": "Jayson"        },
+        { "round": 2, "slot": 1, "a": "Lenny",         "seed_a": 1,  "b": "Dan",     "seed_b": 9,  "winner": "Lenny"         },
+        { "round": 2, "slot": 2, "a": "Axel",          "seed_a": 4,  "b": "Andrew Champo", "seed_b": 5, "winner": "Andrew Champo" },
+        { "round": 2, "slot": 3, "a": "Brendan",       "seed_a": 2,  "b": "Jayson",  "seed_b": 7,  "winner": "Brendan"       },
+        { "round": 2, "slot": 4, "a": "Rich",          "seed_a": 3,  "b": "James",   "seed_b": 6,  "winner": "Rich"          },
+        { "round": 3, "slot": 1, "a": "Lenny",         "b": "Andrew Champo", "winner": "Lenny"   },
+        { "round": 3, "slot": 2, "a": "Brendan",       "b": "Rich",          "winner": "Rich"    },
+        { "round": 4, "slot": 1, "a": "Lenny",         "b": "Rich",          "winner": "Rich"    },
+        { "round": 5, "slot": 1, "a": "Andrew Champo", "seed_a": 5, "b": "Brendan", "seed_b": 2, "winner": "Brendan", "medal_game": true, "label": "Bronze medal game" }
       ],
       "placements": [
-        {
-          "place": 1,
-          "name": "Rich",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 2,
-          "name": "Lenny",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 3,
-          "name": "Brendan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 4,
-          "name": "Andrew Champo",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 5,
-          "name": "Axel",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 6,
-          "name": "James",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 7,
-          "name": "Jayson",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 8,
-          "name": "Dan",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 9,
-          "name": "Matt",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 10,
-          "name": "Aaron",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 11,
-          "name": "Mark S",
-          "source": "TournamentResults.pdf"
-        }
-      ],
-      "matches": []
+        { "place": 1,  "name": "Rich"          },
+        { "place": 2,  "name": "Lenny"         },
+        { "place": 3,  "name": "Brendan"       },
+        { "place": 4,  "name": "Andrew Champo" },
+        { "place": 5,  "name": "Axel"          },
+        { "place": 6,  "name": "Jayson"        },
+        { "place": 7,  "name": "James"         },
+        { "place": 8,  "name": "Dan"           },
+        { "place": 9,  "name": "Gustavo"       },
+        { "place": 10, "name": "Trevor"        }
+      ]
     },
     "C": {
       "format": "single_elim",
+      "_note": "No C playoff bracket exists. Top C players (Gustavo, Trevor) entered the B division bracket instead. Standings only.",
       "entrants": [
-        {
-          "name": "Gustavo",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Alejandra",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Trevor",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Shapes",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Elise",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Darius",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Krista",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Natno",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Charlie",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "name": "Sandra",
-          "source": "TournamentResults.pdf"
-        }
+        { "name": "Trevor"    },
+        { "name": "Alejandra" },
+        { "name": "Shapes"    },
+        { "name": "Elise"     },
+        { "name": "Gustavo"   },
+        { "name": "Darius"    },
+        { "name": "Krista"    },
+        { "name": "Natno"     },
+        { "name": "Charlie"   }
       ],
+      "matches": [],
       "placements": [
-        {
-          "place": 1,
-          "name": "Gustavo",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 2,
-          "name": "Alejandra",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 3,
-          "name": "Trevor",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 4,
-          "name": "Shapes",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 5,
-          "name": "Elise",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 6,
-          "name": "Darius",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 7,
-          "name": "Krista",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 8,
-          "name": "Natno",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 9,
-          "name": "Charlie",
-          "source": "TournamentResults.pdf"
-        },
-        {
-          "place": 10,
-          "name": "Sandra",
-          "source": "TournamentResults.pdf"
-        }
-      ],
-      "matches": []
+        { "place": 1, "name": "Gustavo",   "source": "TournamentResults.pdf" },
+        { "place": 2, "name": "Alejandra", "source": "TournamentResults.pdf" },
+        { "place": 3, "name": "Trevor",    "source": "TournamentResults.pdf" }
+      ]
     }
   }
 }

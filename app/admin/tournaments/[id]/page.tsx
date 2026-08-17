@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { BRACKET_KIND_LABELS, FORMAT_LABELS, divisionLabel, entrantBracketFor } from '@/lib/tournaments'
+import TournamentBracket from '@/components/TournamentBracket'
 import type {
   Bracket,
   BracketKind,
   DivisionKey,
   Player,
+  SeasonStanding,
   Tournament,
   TournamentDivision,
   TournamentEntrantWithPlayer,
@@ -36,6 +38,8 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   const [addPlayerId, setAddPlayerId] = useState('')
   const [addSeed, setAddSeed] = useState('')
   const [customDivision, setCustomDivision] = useState('')
+  const [seasonStandings, setSeasonStandings] = useState<(SeasonStanding & { player: { id: string; display_name: string } | null })[]>([])
+  const [showBracketPreview, setShowBracketPreview] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -61,13 +65,27 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         supabase.from('players').select('*').order('display_name'),
       ])
 
-    setTournament((t ?? null) as Tournament | null)
+    const tournament = (t ?? null) as Tournament | null
+    setTournament(tournament)
     const divs = (ds ?? []) as TournamentDivision[]
     setDivisions(divs)
     setEntrants((es ?? []) as unknown as TournamentEntrantWithPlayer[])
     setMatches((ms ?? []) as unknown as TournamentMatchWithPlayers[])
     setPlayers((ps ?? []) as Player[])
     setActiveDivision((prev) => prev ?? divs[0]?.division ?? null)
+
+    // Load season standings if this tournament is linked to a season.
+    if (tournament?.season_id) {
+      const { data: standings } = await supabase
+        .from('season_standings')
+        .select('*, player:players(id, display_name)')
+        .eq('season_id', tournament.season_id)
+        .order('rank')
+      setSeasonStandings((standings ?? []) as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+    } else {
+      setSeasonStandings([])
+    }
+
     setLoading(false)
   }, [id])
 
@@ -128,6 +146,39 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   async function removeEntrant(entrantId: string) {
     await supabase.from('tournament_entrants').delete().eq('id', entrantId)
     load()
+  }
+
+  async function importFromSeason(division: DivisionKey) {
+    const divStandings = seasonStandings.filter((s) => s.division === division)
+    if (divStandings.length === 0) {
+      setStatus(`No standings for division ${division} in the linked season`)
+      return
+    }
+    setStatus('Importing…')
+    const rows = divStandings
+      .filter((s) => s.player?.id)
+      .map((s) => ({
+        tournament_id: id,
+        division: activeDivision,
+        bracket_kind: entrantBracketFor(activeKind),
+        player_id: s.player!.id,
+        seed: s.rank,
+      }))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from('tournament_entrants').upsert(rows as any, {
+      onConflict: 'tournament_id,division,bracket_kind,player_id',
+      ignoreDuplicates: true,
+    })
+    if (error) { setStatus('Error: ' + error.message); return }
+    setStatus(`Imported ${rows.length} entrants from season standings.`)
+    load()
+  }
+
+  async function dropPlayerIntoSlot(matchId: string, side: 'a' | 'b', playerId: string) {
+    const patch = side === 'a'
+      ? { player_a_id: playerId }
+      : { player_b_id: playerId }
+    await updateMatch(matchId, patch)
   }
 
   async function generateBracket() {
@@ -268,16 +319,35 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
 
       {/* Entrants */}
       <section>
-        <h2 className="text-lg font-semibold mb-3">
-          Entrants{' '}
-          <span className="text-gray-500 text-sm font-normal">
-            — {divisionLabel(activeDivision)} · {entrantBracketFor(activeKind) === 'consolation' ? 'Consolation' : 'Main draw'}
-          </span>
-        </h2>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <h2 className="text-lg font-semibold">
+            Entrants{' '}
+            <span className="text-gray-500 text-sm font-normal">
+              — {divisionLabel(activeDivision)} · {entrantBracketFor(activeKind) === 'consolation' ? 'Consolation' : 'Main draw'}
+            </span>
+          </h2>
+          {seasonStandings.length > 0 && activeDivision && (
+            <button
+              onClick={() => importFromSeason(activeDivision)}
+              className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700"
+            >
+              Seed from season standings
+            </button>
+          )}
+        </div>
 
         <div className="space-y-1 mb-3">
           {divisionEntrants.map((e) => (
-            <div key={e.id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm">
+            <div
+              key={e.id}
+              draggable
+              onDragStart={(ev) => {
+                ev.dataTransfer.setData('playerId', e.player_id)
+                ev.dataTransfer.effectAllowed = 'copy'
+              }}
+              className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm cursor-grab active:cursor-grabbing"
+            >
+              <span className="text-gray-600 select-none">⠿</span>
               <input
                 type="number"
                 value={e.seed ?? ''}
@@ -353,6 +423,29 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
           Generating replaces every match in this division and bracket. Enter each match as a race
           score (e.g. 3 – 2), then pick the winner.
         </p>
+
+        {divisionMatches.length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={() => setShowBracketPreview((v) => !v)}
+              className="text-xs text-gray-400 hover:text-white mb-2 underline"
+            >
+              {showBracketPreview ? 'Hide bracket preview' : 'Show bracket preview'}
+            </button>
+            {showBracketPreview && (
+              <div className="border border-gray-800 rounded p-4 bg-gray-950 overflow-x-auto">
+                <p className="text-xs text-gray-500 mb-3">
+                  Drag an entrant from the list above and drop onto a TBD slot to assign them.
+                </p>
+                <TournamentBracket
+                  matches={divisionMatches}
+                  bracketKind={activeKind}
+                  onSlotDrop={dropPlayerIntoSlot}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-1">
           {divisionMatches.map((m) => (
