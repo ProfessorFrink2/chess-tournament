@@ -171,51 +171,57 @@ function MatchCard({
 
 /** Work out which earlier match each player arrived from.
  *
- *  Prefers next_match_id (the FK set at bracket-generation time) so the graph
- *  is correct even when no results have been entered yet. Falls back to tracing
- *  winner_id through round history for historic data that predates the FK.
- *  A player with a bye has no source match and correctly gets no line.
+ *  Three strategies in priority order:
+ *  1. next_match_id FK — set at generation time, works for TBD brackets.
+ *  2. winner_id tracing — for historic data without the FK.
+ *  3. Slot arithmetic (slot S in round R → ceil(S/2) in round R+1) — last
+ *     resort when neither of the above yields edges, e.g. freshly generated
+ *     brackets whose next_match_id was not yet wired.
  */
 function deriveEdges(matches: TournamentMatchWithPlayers[]): Array<{ from: string; to: string }> {
   const edges: Array<{ from: string; to: string }> = []
   const seen = new Set<string>()
 
-  // Primary: structural FK — winner of `from` advances to `to`.
+  const add = (from: string, to: string) => {
+    const key = `${from}->${to}`
+    if (!seen.has(key)) { seen.add(key); edges.push({ from, to }) }
+  }
+
+  // Strategy 1: structural FK.
   for (const m of matches) {
-    if (m.next_match_id) {
-      const key = `${m.id}->${m.next_match_id}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        edges.push({ from: m.id, to: m.next_match_id })
+    if (m.next_match_id) add(m.id, m.next_match_id)
+  }
+
+  if (edges.length > 0) return edges
+
+  // Strategy 2: winner-tracing (historic data).
+  const byRound = new Map<number, TournamentMatchWithPlayers[]>()
+  for (const m of matches) {
+    if (!byRound.has(m.round)) byRound.set(m.round, [])
+    byRound.get(m.round)!.push(m)
+  }
+  const rounds = [...byRound.keys()].sort((a, b) => a - b)
+  for (let i = 1; i < rounds.length; i++) {
+    for (const m of byRound.get(rounds[i])!) {
+      for (const playerId of [m.player_a_id, m.player_b_id]) {
+        if (!playerId) continue
+        let source: TournamentMatchWithPlayers | undefined
+        for (let j = i - 1; j >= 0 && !source; j--)
+          source = byRound.get(rounds[j])!.find((p) => p.winner_id === playerId)
+        if (source) add(source.id, m.id)
       }
     }
   }
 
-  // Fallback: trace results for historic matches that have no next_match_id.
-  const withoutFk = matches.filter((m) => !m.next_match_id)
-  if (withoutFk.length > 0) {
-    const byRound = new Map<number, TournamentMatchWithPlayers[]>()
-    for (const m of matches) {
-      if (!byRound.has(m.round)) byRound.set(m.round, [])
-      byRound.get(m.round)!.push(m)
-    }
-    const rounds = [...byRound.keys()].sort((a, b) => a - b)
-    for (let i = 1; i < rounds.length; i++) {
-      const target = byRound.get(rounds[i])!
-      for (const m of target) {
-        for (const playerId of [m.player_a_id, m.player_b_id]) {
-          if (!playerId) continue
-          let source: TournamentMatchWithPlayers | undefined
-          for (let j = i - 1; j >= 0 && !source; j--) {
-            source = byRound.get(rounds[j])!.find((p) => p.winner_id === playerId)
-          }
-          if (source) {
-            const key = `${source.id}->${m.id}`
-            if (!seen.has(key)) { seen.add(key); edges.push({ from: source.id, to: m.id }) }
-          }
-        }
-      }
-    }
+  if (edges.length > 0) return edges
+
+  // Strategy 3: slot arithmetic — works for any well-formed bracket even with
+  // no results and no FKs.
+  const bySlot = new Map<string, string>() // "round:slot" -> id
+  for (const m of matches) bySlot.set(`${m.round}:${m.slot}`, m.id)
+  for (const m of matches) {
+    const nextId = bySlot.get(`${m.round + 1}:${Math.ceil(m.slot / 2)}`)
+    if (nextId) add(m.id, nextId)
   }
 
   return edges
