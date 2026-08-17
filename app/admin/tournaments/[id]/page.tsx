@@ -430,6 +430,16 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
       await supabase.from('tournament_matches').delete().eq('id', matchId)
       setMatches((prev) => prev.filter((x) => x.id !== matchId))
     }
+
+    // Re-check for overcrowded matches after any clear operation.
+    const { data: fresh } = await supabase
+      .from('tournament_matches')
+      .select('*, player_a:players!player_a_id(id, display_name, chess_com_username), player_b:players!player_b_id(id, display_name, chess_com_username)')
+      .eq('tournament_id', id)
+      .order('round').order('slot')
+    const freshMatches = (fresh ?? []) as unknown as TournamentMatchWithPlayers[]
+    setMatches(freshMatches)
+    await autoSplitOvercrowdedMatches(freshMatches)
   }
 
   async function resetBracketPlayers() {
