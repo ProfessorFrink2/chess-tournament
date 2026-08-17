@@ -1,0 +1,239 @@
+{
+  "tournament": 4,
+  "name": "Tournament 4",
+  "format": "single_elim",
+  "sources": [
+    "tournament-04/standings.pdf",
+    "tournament-04/bracket-a.pdf",
+    "tournament-04/bracket-b.pdf",
+    "tournament-04/bracket-c.pdf",
+    "tournament-04/bracket-d.pdf"
+  ],
+  "notes": [
+    "The only tournament with four divisions.",
+    "Playoff seeds are exactly the league standings ranks — verified for all four divisions.",
+    "The standings sheet lists the playoff top 3 for each division. In A, C and D the bronze medallist is a losing semifinalist, so a third-place game must have been played; it is not drawn on the brackets and is not recorded here as a match.",
+    "In B division, the sheet gives 3rd to Jeff, who lost his semifinal to Rich. Jayson also lost a semifinal, so again a third-place game happened off-bracket.",
+    "No scores appear on any of the four brackets, only winners."
+  ],
+  "season": { "number": 4, "name": "Season 4" },
+
+  "roster": [
+    { "name": "Shawn B", "username": "shawnmatthewbell" },
+    { "name": "Ben", "username": "smithbwa" },
+    { "name": "Bogdan", "username": "Bohdan7770" },
+    { "name": "Sean", "username": "nomcgratts1" },
+    { "name": "Andy", "username": "randiddly" },
+    { "name": "Terry", "username": "temcgrat" },
+    { "name": "James W", "username": "Kharon678910" },
+    { "name": "Alicia", "username": "ahensch" },
+    { "name": "Taras", "username": "Dambl" },
+    { "name": "Andoni", "username": "larrabe4" },
+    { "name": "Chris", "username": "chrisbstone" },
+    { "name": "Nathan", "username": "fgrrghg" },
+    { "name": "Allister", "username": "Alamo44" },
+    { "name": "Lenny", "username": "kmitchell2" },
+    { "name": "Andrew", "username": "drewdrew" },
+    { "name": "Patrick", "username": "pwongpwong" },
+    { "name": "Rich", "username": "ohwhenthesaints01" },
+    { "name": "Jayson", "username": "jaysondc" },
+    { "name": "Steve", "username": "ScubaStavi" },
+    { "name": "Andrew Champo", "username": "ElChampoLibre" },
+    { "name": "Jeff", "username": "gmos204" },
+    { "name": "Fergel", "username": "QueensWhat" },
+    { "name": "Brendan", "username": "Bthompson35" },
+    { "name": "James", "username": "aznwiteguy" },
+    { "name": "Keyes", "username": "Bishopstip" },
+    { "name": "Fabrice", "username": "fabricenm" },
+    { "name": "Matt", "username": "marrmalian" },
+    { "name": "Alejandra", "username": "aOlli" },
+    { "name": "Giulia", "username": "giuliasam" },
+    { "name": "Peter", "username": "Peteyn" },
+    { "name": "Atif", "username": "Asayed100" },
+    { "name": "Kash", "username": "mr_k_sayed" },
+    { "name": "Jody", "username": "TheonlyMorgan" },
+    { "name": "Natno", "username": "Fancycheckers2020" },
+    { "name": "Justin", "username": "Jbman024" },
+    { "name": "Dan", "username": "djdanidu" },
+    { "name": "Cyndy", "username": "cyndyb33" },
+    { "name": "Kristen", "username": "kbunns" },
+    { "name": "Pat", "username": "Pkizzle877" },
+    { "name": "Mark Cdn", "username": "markmcintyre19" },
+    { "name": "Melinda", "username": "EmergencyHatSandwich" },
+    { "name": "Halsey", "username": "HalseyJuan" },
+    { "name": "Noella", "username": "nbotleo" },
+    { "name": "Kristina", "username": "Hawkdrews" },
+    { "name": "Yiela", "username": "yielahsu" }
+  ],
+
+  "standings": {
+    "A": [
+      { "rank": 1,  "name": "Shawn B",  "wins": 13, "draws": 1, "losses": 1,  "points": 27 },
+      { "rank": 2,  "name": "Ben",      "wins": 11, "draws": 1, "losses": 3,  "points": 23 },
+      { "rank": 3,  "name": "Bogdan",   "wins": 10, "draws": 2, "losses": 3,  "points": 22 },
+      { "rank": 4,  "name": "Sean",     "wins": 9,  "draws": 1, "losses": 5,  "points": 19 },
+      { "rank": 5,  "name": "Andy",     "wins": 9,  "draws": 1, "losses": 5,  "points": 19 },
+      { "rank": 6,  "name": "Terry",    "wins": 8,  "draws": 2, "losses": 5,  "points": 18 },
+      { "rank": 7,  "name": "James W",  "wins": 8,  "draws": 1, "losses": 6,  "points": 17 },
+      { "rank": 8,  "name": "Alicia",   "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 9,  "name": "Taras",    "wins": 8,  "draws": 0, "losses": 7,  "points": 16 },
+      { "rank": 10, "name": "Andoni",   "wins": 7,  "draws": 0, "losses": 8,  "points": 14 },
+      { "rank": 11, "name": "Chris",    "wins": 7,  "draws": 0, "losses": 8,  "points": 14 },
+      { "rank": 12, "name": "Nathan",   "wins": 6,  "draws": 1, "losses": 8,  "points": 13 },
+      { "rank": 13, "name": "Allister", "wins": 4,  "draws": 2, "losses": 9,  "points": 10 },
+      { "rank": 14, "name": "Lenny",    "wins": 5,  "draws": 0, "losses": 10, "points": 10 },
+      { "rank": 15, "name": "Andrew",   "wins": 0,  "draws": 1, "losses": 14, "points": 1  },
+      { "rank": 16, "name": "Patrick",  "wins": 0,  "draws": 1, "losses": 14, "points": 1  }
+    ],
+    "B": [
+      { "rank": 1,  "name": "Rich",          "wins": 11, "draws": 1, "losses": 1,  "points": 23 },
+      { "rank": 2,  "name": "Jayson",        "wins": 8,  "draws": 1, "losses": 4,  "points": 17 },
+      { "rank": 3,  "name": "Steve",         "wins": 7,  "draws": 2, "losses": 4,  "points": 16 },
+      { "rank": 4,  "name": "Andrew Champo", "wins": 8,  "draws": 0, "losses": 5,  "points": 16 },
+      { "rank": 5,  "name": "Jeff",          "wins": 7,  "draws": 2, "losses": 4,  "points": 16 },
+      { "rank": 6,  "name": "Fergel",        "wins": 7,  "draws": 2, "losses": 4,  "points": 16 },
+      { "rank": 7,  "name": "Brendan",       "wins": 8,  "draws": 0, "losses": 5,  "points": 16 },
+      { "rank": 8,  "name": "James",         "wins": 7,  "draws": 1, "losses": 5,  "points": 15 },
+      { "rank": 9,  "name": "Keyes",         "wins": 5,  "draws": 2, "losses": 6,  "points": 12 },
+      { "rank": 10, "name": "Fabrice",       "wins": 6,  "draws": 0, "losses": 7,  "points": 12 },
+      { "rank": 11, "name": "Matt",          "wins": 4,  "draws": 1, "losses": 8,  "points": 9  },
+      { "rank": 12, "name": "Alejandra",     "wins": 3,  "draws": 0, "losses": 10, "points": 6  },
+      { "rank": 13, "name": "Giulia",        "wins": 3,  "draws": 0, "losses": 10, "points": 6  },
+      { "rank": 14, "name": "Peter",         "wins": 1,  "draws": 0, "losses": 12, "points": 2  }
+    ],
+    "C": [
+      { "rank": 1,  "name": "Atif",     "wins": 6, "draws": 2, "losses": 1, "points": 14 },
+      { "rank": 2,  "name": "Kash",     "wins": 5, "draws": 3, "losses": 1, "points": 13 },
+      { "rank": 3,  "name": "Jody",     "wins": 6, "draws": 1, "losses": 2, "points": 13 },
+      { "rank": 4,  "name": "Natno",    "wins": 5, "draws": 2, "losses": 2, "points": 12 },
+      { "rank": 5,  "name": "Justin",   "wins": 4, "draws": 3, "losses": 2, "points": 11 },
+      { "rank": 6,  "name": "Dan",      "wins": 4, "draws": 1, "losses": 4, "points": 9  },
+      { "rank": 7,  "name": "Cyndy",    "wins": 3, "draws": 3, "losses": 3, "points": 9  },
+      { "rank": 8,  "name": "Kristen",  "wins": 2, "draws": 1, "losses": 6, "points": 5  },
+      { "rank": 9,  "name": "Pat",      "wins": 1, "draws": 1, "losses": 7, "points": 3  },
+      { "rank": 10, "name": "Mark Cdn", "wins": 0, "draws": 1, "losses": 8, "points": 1  }
+    ],
+    "D": [
+      { "rank": 1, "name": "Melinda",  "wins": 3, "draws": 3, "losses": 2, "points": 9 },
+      { "rank": 2, "name": "Halsey",   "wins": 3, "draws": 3, "losses": 2, "points": 9 },
+      { "rank": 3, "name": "Noella",   "wins": 3, "draws": 2, "losses": 3, "points": 8 },
+      { "rank": 4, "name": "Kristina", "wins": 3, "draws": 2, "losses": 3, "points": 8 },
+      { "rank": 5, "name": "Yiela",    "wins": 3, "draws": 0, "losses": 5, "points": 6 }
+    ]
+  },
+
+  "divisions": {
+    "A": {
+      "format": "single_elim",
+      "entrants": [
+        { "seed": 1,  "name": "Shawn B" },
+        { "seed": 2,  "name": "Ben" },
+        { "seed": 3,  "name": "Bogdan" },
+        { "seed": 4,  "name": "Sean" },
+        { "seed": 5,  "name": "Andy" },
+        { "seed": 6,  "name": "Terry" },
+        { "seed": 7,  "name": "James W" },
+        { "seed": 8,  "name": "Alicia" },
+        { "seed": 9,  "name": "Taras" },
+        { "seed": 10, "name": "Andoni" },
+        { "seed": 11, "name": "Chris" },
+        { "seed": 12, "name": "Nathan" }
+      ],
+      "placements": [
+        { "place": 1, "name": "Andy" },
+        { "place": 2, "name": "Ben" },
+        { "place": 3, "name": "Bogdan" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Alicia",  "b": "Taras",   "seed_a": 8,  "seed_b": 9,  "winner": "Alicia" },
+        { "round": 1, "slot": 2, "a": "Andy",    "b": "Nathan",  "seed_a": 5,  "seed_b": 12, "winner": "Andy" },
+        { "round": 1, "slot": 3, "a": "James W", "b": "Andoni",  "seed_a": 7,  "seed_b": 10, "winner": "Andoni" },
+        { "round": 1, "slot": 4, "a": "Terry",   "b": "Chris",   "seed_a": 6,  "seed_b": 11, "winner": "Chris" },
+        { "round": 2, "slot": 1, "a": "Shawn B", "b": "Alicia",  "seed_a": 1,  "seed_b": 8,  "winner": "Alicia" },
+        { "round": 2, "slot": 2, "a": "Sean",    "b": "Andy",    "seed_a": 4,  "seed_b": 5,  "winner": "Andy" },
+        { "round": 2, "slot": 3, "a": "Ben",     "b": "Andoni",  "seed_a": 2,  "seed_b": 10, "winner": "Ben" },
+        { "round": 2, "slot": 4, "a": "Bogdan",  "b": "Chris",   "seed_a": 3,  "seed_b": 11, "winner": "Bogdan" },
+        { "round": 3, "slot": 1, "a": "Alicia",  "b": "Andy",    "seed_a": 8,  "seed_b": 5,  "winner": "Andy" },
+        { "round": 3, "slot": 2, "a": "Ben",     "b": "Bogdan",  "seed_a": 2,  "seed_b": 3,  "winner": "Ben" },
+        { "round": 4, "slot": 1, "a": "Andy",    "b": "Ben",     "seed_a": 5,  "seed_b": 2,  "winner": "Andy" }
+      ]
+    },
+    "B": {
+      "format": "single_elim",
+      "entrants": [
+        { "seed": 1,  "name": "Rich" },
+        { "seed": 2,  "name": "Jayson" },
+        { "seed": 3,  "name": "Steve" },
+        { "seed": 4,  "name": "Andrew Champo" },
+        { "seed": 5,  "name": "Jeff" },
+        { "seed": 6,  "name": "Fergel" },
+        { "seed": 7,  "name": "Brendan" },
+        { "seed": 8,  "name": "James" },
+        { "seed": 9,  "name": "Keyes" },
+        { "seed": 10, "name": "Fabrice" }
+      ],
+      "placements": [
+        { "place": 1, "name": "Rich" },
+        { "place": 2, "name": "Steve" },
+        { "place": 3, "name": "Jeff" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "James",         "b": "Keyes",   "seed_a": 8, "seed_b": 9,  "winner": "Keyes" },
+        { "round": 1, "slot": 2, "a": "Brendan",       "b": "Fabrice", "seed_a": 7, "seed_b": 10, "winner": "Brendan" },
+        { "round": 2, "slot": 1, "a": "Rich",          "b": "Keyes",   "seed_a": 1, "seed_b": 9,  "winner": "Rich" },
+        { "round": 2, "slot": 2, "a": "Andrew Champo", "b": "Jeff",    "seed_a": 4, "seed_b": 5,  "winner": "Jeff" },
+        { "round": 2, "slot": 3, "a": "Jayson",        "b": "Brendan", "seed_a": 2, "seed_b": 7,  "winner": "Jayson" },
+        { "round": 2, "slot": 4, "a": "Steve",         "b": "Fergel",  "seed_a": 3, "seed_b": 6,  "winner": "Steve" },
+        { "round": 3, "slot": 1, "a": "Rich",          "b": "Jeff",    "seed_a": 1, "seed_b": 5,  "winner": "Rich" },
+        { "round": 3, "slot": 2, "a": "Jayson",        "b": "Steve",   "seed_a": 2, "seed_b": 3,  "winner": "Steve" },
+        { "round": 4, "slot": 1, "a": "Rich",          "b": "Steve",   "seed_a": 1, "seed_b": 3,  "winner": "Rich" }
+      ]
+    },
+    "C": {
+      "format": "single_elim",
+      "entrants": [
+        { "seed": 1, "name": "Atif" },
+        { "seed": 2, "name": "Kash" },
+        { "seed": 3, "name": "Jody" },
+        { "seed": 4, "name": "Natno" },
+        { "seed": 5, "name": "Justin" },
+        { "seed": 6, "name": "Dan" },
+        { "seed": 7, "name": "Cyndy" },
+        { "seed": 8, "name": "Kristen" }
+      ],
+      "placements": [
+        { "place": 1, "name": "Natno" },
+        { "place": 2, "name": "Kash" },
+        { "place": 3, "name": "Atif" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Atif",  "b": "Kristen", "seed_a": 1, "seed_b": 8, "winner": "Atif" },
+        { "round": 1, "slot": 2, "a": "Natno", "b": "Justin",  "seed_a": 4, "seed_b": 5, "winner": "Natno" },
+        { "round": 1, "slot": 3, "a": "Kash",  "b": "Cyndy",   "seed_a": 2, "seed_b": 7, "winner": "Kash" },
+        { "round": 1, "slot": 4, "a": "Jody",  "b": "Dan",     "seed_a": 3, "seed_b": 6, "winner": "Dan" },
+        { "round": 2, "slot": 1, "a": "Atif",  "b": "Natno",   "seed_a": 1, "seed_b": 4, "winner": "Natno" },
+        { "round": 2, "slot": 2, "a": "Kash",  "b": "Dan",     "seed_a": 2, "seed_b": 6, "winner": "Kash" },
+        { "round": 3, "slot": 1, "a": "Natno", "b": "Kash",    "seed_a": 4, "seed_b": 2, "winner": "Natno" }
+      ]
+    },
+    "D": {
+      "format": "single_elim",
+      "entrants": [
+        { "seed": 1, "name": "Melinda" },
+        { "seed": 2, "name": "Halsey" },
+        { "seed": 3, "name": "Noella" },
+        { "seed": 4, "name": "Kristina" }
+      ],
+      "placements": [
+        { "place": 1, "name": "Melinda" },
+        { "place": 2, "name": "Halsey" },
+        { "place": 3, "name": "Noella" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Melinda", "b": "Kristina", "seed_a": 1, "seed_b": 4, "winner": "Melinda" },
+        { "round": 1, "slot": 2, "a": "Halsey",  "b": "Noella",   "seed_a": 2, "seed_b": 3, "winner": "Halsey" },
+        { "round": 2, "slot": 1, "a": "Melinda", "b": "Halsey",   "seed_a": 1, "seed_b": 2, "winner": "Melinda" }
+      ]
+    }
+  }
+}

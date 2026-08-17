@@ -1,0 +1,153 @@
+{
+  "tournament": 3,
+  "name": "Tournament 3",
+  "format": "mixed",
+  "sources": [
+    "tournament-03/standings-group-stage.pdf",
+    "tournament-03/standings-playoff.pdf"
+  ],
+  "notes": [
+    "Three-phase tournament, and the only one shaped this way.",
+    "Phase 1 (the season): a group stage in three groups named after cities — Saskatoon, Fredericton and Kamloops. Stored as the season standings.",
+    "Phase 2: qualifiers were re-drawn into playoff Divisions A, B and C, each of which played its own round robin. That record is stored on the entrants (wins/draws/losses/points), not as matches, because the individual games were never written down.",
+    "Phase 3: a knockout inside each playoff division, with full 2-out-of-3 series scores (the A division final was 3-out-of-5).",
+    "A division: top 6 advanced to the knockout, ranks 1 and 2 getting a bye to the semifinals.",
+    "The A division quarterfinal is written '4/5 Andy vs 4/5 Nathan' because they were tied on 9 points; seeds recorded as 4 and 5 in standings order.",
+    "A division has a third-place game. B and C do not."
+  ],
+  "season": { "number": 3, "name": "Season 3" },
+
+  "roster": [
+    { "name": "Ben", "username": "smithbwa" },
+    { "name": "Chris", "username": "chrisbstone" },
+    { "name": "Taras", "username": "Dambl" },
+    { "name": "Giulia", "username": "giuliasam" },
+    { "name": "Alejandra", "username": "aOlli" },
+    { "name": "Rich", "username": "ohwhenthesaints01" },
+    { "name": "Pat", "username": "Pkizzle877" },
+    { "name": "Mark US", "username": "markmcneill" },
+    { "name": "Lenny", "username": "kmitchell2" },
+    { "name": "Sean", "username": "nomcgratts1" },
+    { "name": "Jayson", "username": "jaysondc" },
+    { "name": "Jordan", "username": "Slagtron" },
+    { "name": "Alicia", "username": "ahensch" },
+    { "name": "James", "username": "aznwiteguy" },
+    { "name": "Drew", "username": "Thedrevv" },
+    { "name": "Natasha", "username": "Jettiespaghetti" },
+    { "name": "Bogdan", "username": "Bohdan7770" },
+    { "name": "Nathan", "username": "fgrrghg" },
+    { "name": "Andy", "username": "randiddly" },
+    { "name": "Natno", "username": "Fancycheckers2020" },
+    { "name": "Brendan", "username": "Bthompson35" },
+    { "name": "Mark Cdn", "username": "markmcintyre19" },
+    { "name": "Cyndy", "username": "cyndyb33" }
+  ],
+
+  "standings": {
+    "Saskatoon": [
+      { "rank": 1, "name": "Ben",       "wins": 6, "draws": 0, "losses": 1, "points": 12 },
+      { "rank": 2, "name": "Chris",     "wins": 6, "draws": 0, "losses": 1, "points": 12 },
+      { "rank": 3, "name": "Taras",     "wins": 5, "draws": 0, "losses": 2, "points": 10 },
+      { "rank": 4, "name": "Giulia",    "wins": 4, "draws": 0, "losses": 3, "points": 8  },
+      { "rank": 5, "name": "Alejandra", "wins": 3, "draws": 0, "losses": 4, "points": 6  },
+      { "rank": 6, "name": "Rich",      "wins": 2, "draws": 0, "losses": 5, "points": 4  },
+      { "rank": 7, "name": "Pat",       "wins": 2, "draws": 0, "losses": 5, "points": 4  },
+      { "rank": 8, "name": "Mark US",   "wins": 0, "draws": 0, "losses": 7, "points": 0  }
+    ],
+    "Fredericton": [
+      { "rank": 1, "name": "Lenny",   "wins": 6, "draws": 0, "losses": 1, "points": 12 },
+      { "rank": 2, "name": "Sean",    "wins": 6, "draws": 0, "losses": 1, "points": 12 },
+      { "rank": 3, "name": "Jayson",  "wins": 5, "draws": 0, "losses": 2, "points": 10 },
+      { "rank": 4, "name": "Jordan",  "wins": 4, "draws": 0, "losses": 3, "points": 8  },
+      { "rank": 5, "name": "Alicia",  "wins": 3, "draws": 0, "losses": 4, "points": 6  },
+      { "rank": 6, "name": "James",   "wins": 3, "draws": 0, "losses": 4, "points": 6  },
+      { "rank": 7, "name": "Drew",    "wins": 1, "draws": 0, "losses": 6, "points": 2  },
+      { "rank": 8, "name": "Natasha", "wins": 0, "draws": 0, "losses": 7, "points": 0  }
+    ],
+    "Kamloops": [
+      { "rank": 1, "name": "Bogdan",   "wins": 6, "draws": 0, "losses": 0, "points": 12 },
+      { "rank": 2, "name": "Nathan",   "wins": 4, "draws": 0, "losses": 2, "points": 8  },
+      { "rank": 3, "name": "Andy",     "wins": 4, "draws": 0, "losses": 2, "points": 8  },
+      { "rank": 4, "name": "Natno",    "wins": 2, "draws": 1, "losses": 3, "points": 5  },
+      { "rank": 5, "name": "Brendan",  "wins": 2, "draws": 0, "losses": 4, "points": 4  },
+      { "rank": 6, "name": "Mark Cdn", "wins": 1, "draws": 1, "losses": 4, "points": 3  },
+      { "rank": 7, "name": "Cyndy",    "wins": 1, "draws": 0, "losses": 5, "points": 2  }
+    ]
+  },
+
+  "divisions": {
+    "A": {
+      "format": "mixed",
+      "series": "Quarterfinals and semifinals 2-out-of-3; final and third-place game 3-out-of-5 and 2-out-of-3 respectively",
+      "_comment": "Entrant wins/draws/losses/points are from the playoff division round robin, not the city group stage.",
+      "entrants": [
+        { "seed": 1, "name": "Bogdan", "wins": 6, "draws": 2, "losses": 0, "points": 14 },
+        { "seed": 2, "name": "Ben",    "wins": 5, "draws": 1, "losses": 2, "points": 11 },
+        { "seed": 3, "name": "Taras",  "wins": 5, "draws": 1, "losses": 2, "points": 11 },
+        { "seed": 4, "name": "Andy",   "wins": 4, "draws": 1, "losses": 3, "points": 9  },
+        { "seed": 5, "name": "Nathan", "wins": 4, "draws": 1, "losses": 3, "points": 9  },
+        { "seed": 6, "name": "Sean",   "wins": 4, "draws": 0, "losses": 4, "points": 8  },
+        { "seed": 7, "name": "Lenny",  "wins": 2, "draws": 1, "losses": 5, "points": 5  },
+        { "seed": 8, "name": "Chris",  "wins": 2, "draws": 1, "losses": 5, "points": 5  },
+        { "seed": 9, "name": "Jayson", "wins": 0, "draws": 0, "losses": 8, "points": 0  }
+      ],
+      "placements": [
+        { "place": 1, "name": "Bogdan" },
+        { "place": 2, "name": "Ben" },
+        { "place": 3, "name": "Andy" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Taras",  "b": "Sean",   "seed_a": 3, "seed_b": 6, "score_a": 0, "score_b": 2, "winner": "Sean" },
+        { "round": 1, "slot": 2, "a": "Andy",   "b": "Nathan", "seed_a": 4, "seed_b": 5, "score_a": 2, "score_b": 1, "winner": "Andy" },
+        { "round": 2, "slot": 1, "a": "Bogdan", "b": "Andy",   "seed_a": 1, "seed_b": 4, "score_a": 2, "score_b": 0, "winner": "Bogdan" },
+        { "round": 2, "slot": 2, "a": "Ben",    "b": "Sean",   "seed_a": 2, "seed_b": 6, "score_a": 2, "score_b": 1, "winner": "Ben" },
+        { "round": 3, "slot": 1, "a": "Bogdan", "b": "Ben",    "seed_a": 1, "seed_b": 2, "score_a": 3, "score_b": 1, "winner": "Bogdan" },
+        { "round": 3, "slot": 2, "a": "Andy",   "b": "Sean",   "seed_a": 4, "seed_b": 6, "score_a": 2, "score_b": 0, "winner": "Andy", "medal_game": true, "label": "Third-place game" }
+      ]
+    },
+    "B": {
+      "format": "mixed",
+      "series": "Semifinals and final 2-out-of-3",
+      "entrants": [
+        { "seed": 1, "name": "Alicia",    "wins": 5, "draws": 1, "losses": 0, "points": 11 },
+        { "seed": 2, "name": "Jordan",    "wins": 4, "draws": 0, "losses": 2, "points": 8  },
+        { "seed": 3, "name": "James",     "wins": 3, "draws": 0, "losses": 3, "points": 6  },
+        { "seed": 4, "name": "Brendan",   "wins": 3, "draws": 0, "losses": 3, "points": 6  },
+        { "seed": 5, "name": "Giulia",    "wins": 2, "draws": 1, "losses": 3, "points": 5  },
+        { "seed": 6, "name": "Alejandra", "wins": 2, "draws": 0, "losses": 4, "points": 4  },
+        { "seed": 7, "name": "Natno",     "wins": 1, "draws": 0, "losses": 5, "points": 2  }
+      ],
+      "placements": [
+        { "place": 1, "name": "Alicia" },
+        { "place": 2, "name": "Jordan" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Alicia", "b": "Brendan", "seed_a": 1, "seed_b": 4, "score_a": 2, "score_b": 0, "winner": "Alicia" },
+        { "round": 1, "slot": 2, "a": "Jordan", "b": "James",   "seed_a": 2, "seed_b": 3, "score_a": 2, "score_b": 1, "winner": "Jordan" },
+        { "round": 2, "slot": 1, "a": "Alicia", "b": "Jordan",  "seed_a": 1, "seed_b": 2, "score_a": 2, "score_b": 0, "winner": "Alicia" }
+      ]
+    },
+    "C": {
+      "format": "mixed",
+      "series": "Semifinals and final 2-out-of-3",
+      "entrants": [
+        { "seed": 1, "name": "Rich",     "wins": 5, "draws": 1, "losses": 0, "points": 11 },
+        { "seed": 2, "name": "Cyndy",    "wins": 5, "draws": 0, "losses": 1, "points": 10 },
+        { "seed": 3, "name": "Mark US",  "wins": 3, "draws": 1, "losses": 2, "points": 7  },
+        { "seed": 4, "name": "Mark Cdn", "wins": 3, "draws": 0, "losses": 3, "points": 6  },
+        { "seed": 5, "name": "Natasha",  "wins": 2, "draws": 2, "losses": 2, "points": 6  },
+        { "seed": 6, "name": "Pat",      "wins": 0, "draws": 1, "losses": 5, "points": 1  },
+        { "seed": 7, "name": "Drew",     "wins": 0, "draws": 1, "losses": 5, "points": 1  }
+      ],
+      "placements": [
+        { "place": 1, "name": "Rich" },
+        { "place": 2, "name": "Cyndy" }
+      ],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Rich",  "b": "Mark Cdn", "seed_a": 1, "seed_b": 4, "score_a": 2, "score_b": 0, "winner": "Rich" },
+        { "round": 1, "slot": 2, "a": "Cyndy", "b": "Mark US",  "seed_a": 2, "seed_b": 3, "score_a": 2, "score_b": 0, "winner": "Cyndy" },
+        { "round": 2, "slot": 1, "a": "Rich",  "b": "Cyndy",    "seed_a": 1, "seed_b": 2, "score_a": 2, "score_b": 1, "winner": "Rich" }
+      ]
+    }
+  }
+}

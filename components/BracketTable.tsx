@@ -1,8 +1,9 @@
 'use client'
 
 import { Player, MatchWithPlayers as Match } from '@/lib/database.types'
+import StandingsTable, { StandingRow } from './StandingsTable'
 
-function computeStandings(players: Player[], matches: Match[]) {
+function computeStandings(players: Player[], matches: Match[]): StandingRow[] {
   const scores: Record<string, { wins: number; draws: number; losses: number; played: number }> = {}
   for (const p of players) {
     scores[p.id] = { wins: 0, draws: 0, losses: 0, played: 0 }
@@ -27,57 +28,19 @@ function computeStandings(players: Player[], matches: Match[]) {
   }
 
   return players
-    .map((p) => ({ player: p, ...scores[p.id] }))
+    .map((p) => {
+      const s = scores[p.id]
+      return { player: p, wins: s.wins, draws: s.draws, losses: s.losses, points: s.wins * 2 + s.draws }
+    })
     .sort((a, b) => {
-      const pts = (x: typeof a) => x.wins * 2 + x.draws
-      const diff = pts(b) - pts(a)
+      const diff = b.points - a.points
       if (diff !== 0) return diff
       return a.player.display_name.localeCompare(b.player.display_name)
     })
 }
 
+/** Live-season league table: derives standings from played matches, then hands
+ *  off to StandingsTable so it renders identically to a stored historic table. */
 export default function BracketTable({ players, matches }: { players: Player[]; matches: Match[] }) {
-  const standings = computeStandings(players, matches)
-
-  if (players.length === 0) {
-    return <p className="text-gray-500 text-sm">No players assigned yet.</p>
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-gray-400 text-left border-b border-gray-800">
-            <th className="pb-2 pr-4">#</th>
-            <th className="pb-2 pr-4">Player</th>
-            <th className="pb-2 pr-2 text-center">W</th>
-            <th className="pb-2 pr-2 text-center">D</th>
-            <th className="pb-2 pr-2 text-center">L</th>
-            <th className="pb-2 text-center">Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {standings.map((row, i) => (
-            <tr key={row.player.id} className="border-b border-gray-800/50">
-              <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
-              <td className="py-2 pr-4 font-medium">
-                <a
-                  href={`https://chess.com/member/${row.player.chess_com_username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {row.player.display_name}
-                </a>
-              </td>
-              <td className="py-2 pr-2 text-center text-green-400">{row.wins}</td>
-              <td className="py-2 pr-2 text-center text-gray-400">{row.draws}</td>
-              <td className="py-2 pr-2 text-center text-red-400">{row.losses}</td>
-              <td className="py-2 text-center font-bold">{row.wins * 2 + row.draws}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
+  return <StandingsTable rows={computeStandings(players, matches)} />
 }

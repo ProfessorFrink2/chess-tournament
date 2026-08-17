@@ -76,6 +76,8 @@ export default function PlayerPage() {
     if (allPlayers) {
       const map: Record<string, string> = {}
       for (const ap of allPlayers as Pick<Player, 'chess_com_username' | 'display_name'>[]) {
+        // Historic players have no chess.com account — nothing to map.
+        if (!ap.chess_com_username) continue
         map[ap.chess_com_username.toLowerCase()] = ap.display_name
       }
       setUsernameToName(map)
@@ -96,6 +98,7 @@ export default function PlayerPage() {
     setLoading(false)
 
     // Fetch chess.com game history in background
+    if (!p.chess_com_username) return
     setChessLoading(true)
     fetch(`/api/chess-com/games?username=${encodeURIComponent(p.chess_com_username)}&limit=200`)
       .then(r => r.json())
@@ -141,7 +144,8 @@ export default function PlayerPage() {
     match.white_player_id === player.id ? 'White' : 'Black'
 
   // Find chess.com games already played against a given opponent username
-  function foundGamesFor(oppUsername: string): ChessComGame[] {
+  function foundGamesFor(oppUsername: string | null): ChessComGame[] {
+    if (!oppUsername) return []
     const opp = oppUsername.toLowerCase()
     return chessGames.filter(g =>
       g.white.username.toLowerCase() === opp || g.black.username.toLowerCase() === opp
@@ -149,7 +153,7 @@ export default function PlayerPage() {
   }
 
   function gameOutcomeLabel(g: ChessComGame): string {
-    const isWhite = g.white.username.toLowerCase() === player!.chess_com_username.toLowerCase()
+    const isWhite = g.white.username.toLowerCase() === player!.chess_com_username?.toLowerCase()
     const me = isWhite ? g.white : g.black
     if (me.result === 'win') return 'You won'
     if ((isWhite ? g.black : g.white).result === 'win') return 'You lost'
@@ -166,14 +170,14 @@ export default function PlayerPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{player.display_name}</h1>
-          <a
+          {player.chess_com_username && <a
             href={`https://chess.com/member/${player.chess_com_username}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-gray-400 hover:text-white"
           >
             @{player.chess_com_username} ↗
-          </a>
+          </a>}
         </div>
         <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${
           player.bracket === 'A'
@@ -228,14 +232,14 @@ export default function PlayerPage() {
                         <span className="text-gray-500">vs</span>
                         <span className="font-medium">{opp.display_name}</span>
                         {!isPending && <span className="text-xs text-gray-500">({color === 'White' ? 'Black' : 'White'})</span>}
-                        <a
+                        {opp.chess_com_username && <a
                           href={`https://chess.com/member/${opp.chess_com_username}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-gray-500 hover:text-gray-300"
                         >
                           @{opp.chess_com_username} ↗
-                        </a>
+                        </a>}
                       </div>
                       <div className={`text-xs mt-0.5 ${dateColor}`}>
                         Week {m.week_number} · {m.scheduled_start} – {m.scheduled_end}
@@ -388,7 +392,7 @@ export default function PlayerPage() {
           <>
             <div className="space-y-1">
               {chessGames.slice(0, showCount).map((g, i) => {
-                const isWhite = g.white.username.toLowerCase() === player.chess_com_username.toLowerCase()
+                const isWhite = g.white.username.toLowerCase() === player.chess_com_username?.toLowerCase()
                 const me = isWhite ? g.white : g.black
                 const opp = isWhite ? g.black : g.white
                 const date = new Date(g.end_time * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })

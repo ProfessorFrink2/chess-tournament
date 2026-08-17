@@ -1,0 +1,114 @@
+{
+  "_comment": [
+    "Player identity rules for the historic import.",
+    "",
+    "Identity is resolved primarily by chess.com username, which is stable and",
+    "unambiguous. Display names are NOT reliable on their own: two different",
+    "people both appear as 'Kyle', and several people are recorded under a",
+    "shortened or lengthened name in different seasons.",
+    "",
+    "The importer unions entries that share a username, then applies the",
+    "explicit rules below. Anything it cannot resolve is a hard error, never a",
+    "silent guess."
+  ],
+
+  "canonical_names": {
+    "_comment": [
+      "username -> the display name to store. Where a person appears under",
+      "several names across seasons, the most recent one wins."
+    ],
+    "kylewaite": "Kyle W",
+    "Jeelock": "Paul",
+    "markmcneill": "Mark US"
+  },
+
+  "username_changes": {
+    "_comment": [
+      "ASSUMPTION, FLAGGED FOR REVIEW. These are one person who changed their",
+      "chess.com username between seasons, merged on the strength of an",
+      "identical display name plus never appearing in the same tournament.",
+      "If either is actually two different people, split them here.",
+      "The value is the username to keep (the later one)."
+    ],
+    "Michael": {
+      "usernames": ["GeorgeDubyuh", "KnotYourCapitan"],
+      "keep": "KnotYourCapitan",
+      "seen": {
+        "GeorgeDubyuh": [10],
+        "KnotYourCapitan": [12, 14]
+      }
+    },
+    "Darius": {
+      "usernames": ["123SLP", "30FootPullUp"],
+      "keep": "30FootPullUp",
+      "seen": {
+        "123SLP": [1, 2, 5],
+        "30FootPullUp": [6]
+      }
+    }
+  },
+
+  "distinct_despite_shared_name": {
+    "_comment": [
+      "Different people who share a first name. Listed so a future maintainer",
+      "does not 'helpfully' merge them."
+    ],
+    "Kyle": ["CaroleBaskin69 (tournament 1)", "kylewaite -> 'Kyle W' (tournaments 10, 12)"],
+    "Shawn": ["MostlyFavourites -> 'Shawn A'", "shawnmatthewbell -> 'Shawn B'", "DreamSlayer -> 'Shawn T'"],
+    "James": ["aznwiteguy -> 'James'", "Kharon678910 -> 'James W'"],
+    "Jeff": ["gmos204 -> 'Jeff'", "jeffsappendix1 -> 'Jeff A'"],
+    "Mark": ["markmcneill -> 'Mark US'", "markmcintyre19 -> 'Mark Cdn'", "bobark -> 'Mark S'"],
+    "Eugene/Eugenio": ["talmidlee -> 'Eugene'", "Venturo -> 'Eugenio'"],
+    "Andrew": ["drewdrew -> 'Andrew'", "ElChampoLibre -> 'Andrew Champo'", "andrewrk93 -> 'Andrew K'"],
+    "Sean": ["nomcgratts1 -> 'Sean'", "Sspins -> 'Sean P'"],
+    "Matt/Matthew": ["marrmalian -> 'Matt'", "toolie -> 'Matthew'"]
+  },
+
+  "live_username_overrides": {
+    "_comment": [
+      "historic username -> the spelling already in the live players table.",
+      "Applied last, after username_changes, so historic results attach to the",
+      "existing live player rather than creating a duplicate.",
+      "",
+      "Michael: tournaments 12 and 14 both print 'KnotYourCapitan' (cap-i-tan);",
+      "the live database has 'knotyourcaptain' (cap-tain). Confirmed by cropping",
+      "and upscaling tournament-14/standings.jpeg. Decision: the live spelling is",
+      "the real chess.com account and the source sheets carry the typo, so the",
+      "live spelling wins and the chess.com game lookup keeps working."
+    ],
+    "knotyourcapitan": "knotyourcaptain"
+  },
+
+  "deliberately_separate_from_live": {
+    "_comment": [
+      "Historic people who must NOT be merged into a same-named live player.",
+      "The importer creates a second row for these on purpose."
+    ],
+    "Andy": {
+      "historic_username": "randiddly",
+      "live_username": "randongles",
+      "reason": "Decision: treated as two different people despite the shared display name. Both rows will read 'Andy'; the chess.com username is what tells them apart, and the admin player dropdown shows it."
+    }
+  },
+
+  "not_players": {
+    "_comment": "Placeholder rows in standings tables. Dropped, never imported.",
+    "entries": ["Free win"]
+  },
+
+  "corrections": {
+    "_comment": [
+      "scripts/seed-players.mjs and the live players table list Andy as",
+      "'randongles'. Three independent historic sources (tournament 1 Group B,",
+      "tournament 4 A Division, and the tournament 14 standings image) all say",
+      "'randiddly'. Decision: these are two different people, so the live row is",
+      "left untouched and the historic Andy is imported as a separate player.",
+      "See deliberately_separate_from_live above."
+    ],
+    "Andy": {
+      "seed_script_says": "randongles",
+      "sources_say": "randiddly",
+      "resolution": "two separate players"
+    }
+  }
+}

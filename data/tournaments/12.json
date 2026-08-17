@@ -1,0 +1,929 @@
+{
+  "tournament": 12,
+  "name": "Tournament 12",
+  "format": "mixed",
+  "sources": [
+    "tournament-12/standings.png",
+    "tournament-12/bracket-a.pdf",
+    "tournament-12/bracket-b-winners.pdf",
+    "tournament-12/bracket-b-losers.pdf"
+  ],
+  "notes": [
+    "Mixed formats: the A division played single elimination, the B division played DOUBLE elimination with separate winners and losers brackets.",
+    "The B division league phase was two parallel round robins, 'B (X)' and 'B (Z)', of 10 players each; the top 6 of each made the playoff with the top 2 getting a first-round bye.",
+    "On the B brackets each name carries a number in parentheses \u2014 that is the player's rank within their own sub-group, which is why '(1)' appears twice (Steve is B(X) rank 1, Ryan is B(Z) rank 1). Verified against the standings: every one of the 12 B entrants matches.",
+    "The B winners bracket ends 'Ryan over Terry'. Terry won the winners side; Ryan came back through the losers side and won the grand final. That is the double-elimination reset, so Ryan is champion and Terry runner-up.",
+    "Steve lost the losers final to Ryan, which places him third.",
+    "A division seeds match the Division A standings ranks exactly.",
+    "Standings are a PNG screenshot with no text layer and were read visually.",
+    "No scores are recorded on any of the three brackets, only winners.",
+    "Michael appears here as 'KnotYourCapitan' \u2014 see the note in data/players.json about the tournament 10 spelling.",
+    "TournamentResults.pdf records a B division consolation bracket (Jayson champion, Brian runner-up) that has no bracket sheet in the source files."
+  ],
+  "season": {
+    "number": 12,
+    "name": "Season 12"
+  },
+  "roster": [
+    {
+      "name": "Stefan",
+      "username": "steftod"
+    },
+    {
+      "name": "Alicia",
+      "username": "ahensch"
+    },
+    {
+      "name": "Sander",
+      "username": "MrKodak"
+    },
+    {
+      "name": "Nathan",
+      "username": "fgrrghg"
+    },
+    {
+      "name": "Aitor",
+      "username": "Aitorgaldos"
+    },
+    {
+      "name": "Bogdan",
+      "username": "Bohdan7770"
+    },
+    {
+      "name": "Michael",
+      "username": "KnotYourCapitan"
+    },
+    {
+      "name": "Andy",
+      "username": "randiddly"
+    },
+    {
+      "name": "Kyle W",
+      "username": "kylewaite"
+    },
+    {
+      "name": "Taras",
+      "username": "Dambl"
+    },
+    {
+      "name": "Rob",
+      "username": "Robmon13"
+    },
+    {
+      "name": "Ben",
+      "username": "smithbwa"
+    },
+    {
+      "name": "Shawn B",
+      "username": "shawnmatthewbell"
+    },
+    {
+      "name": "Andriy",
+      "username": "SYROTEI"
+    },
+    {
+      "name": "Andrew K",
+      "username": "andrewrk93"
+    },
+    {
+      "name": "Michele O",
+      "username": "michele_o"
+    },
+    {
+      "name": "Jamie",
+      "username": "CowMaster66"
+    },
+    {
+      "name": "Steve",
+      "username": "ScubaStavi"
+    },
+    {
+      "name": "Terry",
+      "username": "temcgrat"
+    },
+    {
+      "name": "Sean P",
+      "username": "Sspins"
+    },
+    {
+      "name": "Keyes",
+      "username": "Bishopstip"
+    },
+    {
+      "name": "Dan",
+      "username": "djdanidu"
+    },
+    {
+      "name": "Alejandra",
+      "username": "aOlli"
+    },
+    {
+      "name": "Andrew Champo",
+      "username": "ElChampoLibre"
+    },
+    {
+      "name": "Natno",
+      "username": "Fancycheckers2020"
+    },
+    {
+      "name": "Krista",
+      "username": "codiwomple"
+    },
+    {
+      "name": "Brendan",
+      "username": "Bthompson35"
+    },
+    {
+      "name": "Ryan",
+      "username": "rlon30"
+    },
+    {
+      "name": "Paul",
+      "username": "Jeelock"
+    },
+    {
+      "name": "Axel",
+      "username": "ax359"
+    },
+    {
+      "name": "James",
+      "username": "aznwiteguy"
+    },
+    {
+      "name": "Matt",
+      "username": "marrmalian"
+    },
+    {
+      "name": "Lenny",
+      "username": "kmitchell2"
+    },
+    {
+      "name": "Brian",
+      "username": "bcormier"
+    },
+    {
+      "name": "Shapes",
+      "username": "shapesies"
+    },
+    {
+      "name": "Giulia",
+      "username": "giuliasam"
+    },
+    {
+      "name": "Jayson",
+      "username": "jaysondc"
+    }
+  ],
+  "standings": {
+    "A": [
+      {
+        "rank": 1,
+        "name": "Stefan",
+        "wins": 11,
+        "draws": 2,
+        "losses": 3,
+        "points": 24
+      },
+      {
+        "rank": 2,
+        "name": "Alicia",
+        "wins": 11,
+        "draws": 0,
+        "losses": 5,
+        "points": 22
+      },
+      {
+        "rank": 3,
+        "name": "Sander",
+        "wins": 11,
+        "draws": 0,
+        "losses": 5,
+        "points": 22
+      },
+      {
+        "rank": 4,
+        "name": "Nathan",
+        "wins": 10,
+        "draws": 2,
+        "losses": 4,
+        "points": 22
+      },
+      {
+        "rank": 5,
+        "name": "Aitor",
+        "wins": 10,
+        "draws": 0,
+        "losses": 6,
+        "points": 20
+      },
+      {
+        "rank": 6,
+        "name": "Bogdan",
+        "wins": 10,
+        "draws": 0,
+        "losses": 6,
+        "points": 20
+      },
+      {
+        "rank": 7,
+        "name": "Michael",
+        "wins": 9,
+        "draws": 0,
+        "losses": 7,
+        "points": 18
+      },
+      {
+        "rank": 8,
+        "name": "Andy",
+        "wins": 8,
+        "draws": 1,
+        "losses": 7,
+        "points": 17
+      },
+      {
+        "rank": 9,
+        "name": "Kyle W",
+        "wins": 7,
+        "draws": 1,
+        "losses": 8,
+        "points": 15
+      },
+      {
+        "rank": 10,
+        "name": "Taras",
+        "wins": 7,
+        "draws": 0,
+        "losses": 9,
+        "points": 14
+      },
+      {
+        "rank": 11,
+        "name": "Rob",
+        "wins": 7,
+        "draws": 0,
+        "losses": 9,
+        "points": 14
+      },
+      {
+        "rank": 12,
+        "name": "Ben",
+        "wins": 6,
+        "draws": 2,
+        "losses": 8,
+        "points": 14
+      },
+      {
+        "rank": 13,
+        "name": "Shawn B",
+        "wins": 6,
+        "draws": 1,
+        "losses": 9,
+        "points": 13
+      },
+      {
+        "rank": 14,
+        "name": "Andriy",
+        "wins": 5,
+        "draws": 1,
+        "losses": 10,
+        "points": 11
+      },
+      {
+        "rank": 15,
+        "name": "Andrew K",
+        "wins": 5,
+        "draws": 0,
+        "losses": 11,
+        "points": 10
+      },
+      {
+        "rank": 16,
+        "name": "Michele O",
+        "wins": 4,
+        "draws": 2,
+        "losses": 10,
+        "points": 10
+      },
+      {
+        "rank": 17,
+        "name": "Jamie",
+        "wins": 2,
+        "draws": 3,
+        "losses": 11,
+        "points": 7
+      }
+    ],
+    "B (X)": [
+      {
+        "rank": 1,
+        "name": "Steve",
+        "wins": 7,
+        "draws": 2,
+        "losses": 0,
+        "points": 16
+      },
+      {
+        "rank": 2,
+        "name": "Terry",
+        "wins": 7,
+        "draws": 1,
+        "losses": 1,
+        "points": 15
+      },
+      {
+        "rank": 3,
+        "name": "Sean P",
+        "wins": 6,
+        "draws": 2,
+        "losses": 1,
+        "points": 14
+      },
+      {
+        "rank": 4,
+        "name": "Keyes",
+        "wins": 6,
+        "draws": 0,
+        "losses": 3,
+        "points": 12
+      },
+      {
+        "rank": 5,
+        "name": "Dan",
+        "wins": 4,
+        "draws": 1,
+        "losses": 4,
+        "points": 9
+      },
+      {
+        "rank": 6,
+        "name": "Alejandra",
+        "wins": 4,
+        "draws": 0,
+        "losses": 5,
+        "points": 8
+      },
+      {
+        "rank": 7,
+        "name": "Andrew Champo",
+        "wins": 3,
+        "draws": 0,
+        "losses": 6,
+        "points": 6
+      },
+      {
+        "rank": 8,
+        "name": "Natno",
+        "wins": 2,
+        "draws": 0,
+        "losses": 7,
+        "points": 4
+      },
+      {
+        "rank": 9,
+        "name": "Krista",
+        "wins": 1,
+        "draws": 0,
+        "losses": 7,
+        "points": 2
+      },
+      {
+        "rank": 10,
+        "name": "Brendan",
+        "wins": 1,
+        "draws": 0,
+        "losses": 7,
+        "points": 2
+      }
+    ],
+    "B (Z)": [
+      {
+        "rank": 1,
+        "name": "Ryan",
+        "wins": 7,
+        "draws": 1,
+        "losses": 1,
+        "points": 15
+      },
+      {
+        "rank": 2,
+        "name": "Paul",
+        "wins": 5,
+        "draws": 2,
+        "losses": 2,
+        "points": 12
+      },
+      {
+        "rank": 3,
+        "name": "Axel",
+        "wins": 6,
+        "draws": 0,
+        "losses": 3,
+        "points": 12
+      },
+      {
+        "rank": 4,
+        "name": "James",
+        "wins": 5,
+        "draws": 0,
+        "losses": 4,
+        "points": 10
+      },
+      {
+        "rank": 5,
+        "name": "Matt",
+        "wins": 4,
+        "draws": 0,
+        "losses": 5,
+        "points": 8
+      },
+      {
+        "rank": 6,
+        "name": "Lenny",
+        "wins": 4,
+        "draws": 0,
+        "losses": 5,
+        "points": 8
+      },
+      {
+        "rank": 7,
+        "name": "Brian",
+        "wins": 4,
+        "draws": 0,
+        "losses": 5,
+        "points": 8
+      },
+      {
+        "rank": 8,
+        "name": "Shapes",
+        "wins": 3,
+        "draws": 0,
+        "losses": 6,
+        "points": 6
+      },
+      {
+        "rank": 9,
+        "name": "Giulia",
+        "wins": 3,
+        "draws": 0,
+        "losses": 6,
+        "points": 6
+      },
+      {
+        "rank": 10,
+        "name": "Jayson",
+        "wins": 2,
+        "draws": 1,
+        "losses": 6,
+        "points": 5
+      }
+    ]
+  },
+  "divisions": {
+    "A": {
+      "format": "single_elim",
+      "entrants": [
+        {
+          "seed": 1,
+          "name": "Stefan"
+        },
+        {
+          "seed": 2,
+          "name": "Alicia"
+        },
+        {
+          "seed": 3,
+          "name": "Sander"
+        },
+        {
+          "seed": 4,
+          "name": "Nathan"
+        },
+        {
+          "seed": 5,
+          "name": "Aitor"
+        },
+        {
+          "seed": 6,
+          "name": "Bogdan"
+        },
+        {
+          "seed": 7,
+          "name": "Michael"
+        },
+        {
+          "seed": 8,
+          "name": "Andy"
+        },
+        {
+          "seed": 9,
+          "name": "Kyle W"
+        },
+        {
+          "seed": 10,
+          "name": "Taras"
+        },
+        {
+          "seed": 11,
+          "name": "Rob"
+        },
+        {
+          "seed": 12,
+          "name": "Ben"
+        }
+      ],
+      "placements": [
+        {
+          "place": 1,
+          "name": "Stefan"
+        },
+        {
+          "place": 2,
+          "name": "Bogdan"
+        },
+        {
+          "place": 3,
+          "name": "Alicia"
+        }
+      ],
+      "matches": [
+        {
+          "round": 1,
+          "slot": 1,
+          "a": "Andy",
+          "b": "Kyle W",
+          "seed_a": 8,
+          "seed_b": 9,
+          "winner": "Andy"
+        },
+        {
+          "round": 1,
+          "slot": 2,
+          "a": "Aitor",
+          "b": "Ben",
+          "seed_a": 5,
+          "seed_b": 12,
+          "winner": "Aitor"
+        },
+        {
+          "round": 1,
+          "slot": 3,
+          "a": "Michael",
+          "b": "Taras",
+          "seed_a": 7,
+          "seed_b": 10,
+          "winner": "Michael"
+        },
+        {
+          "round": 1,
+          "slot": 4,
+          "a": "Bogdan",
+          "b": "Rob",
+          "seed_a": 6,
+          "seed_b": 11,
+          "winner": "Bogdan"
+        },
+        {
+          "round": 2,
+          "slot": 1,
+          "a": "Stefan",
+          "b": "Andy",
+          "seed_a": 1,
+          "seed_b": 8,
+          "winner": "Stefan"
+        },
+        {
+          "round": 2,
+          "slot": 2,
+          "a": "Nathan",
+          "b": "Aitor",
+          "seed_a": 4,
+          "seed_b": 5,
+          "winner": "Aitor"
+        },
+        {
+          "round": 2,
+          "slot": 3,
+          "a": "Alicia",
+          "b": "Michael",
+          "seed_a": 2,
+          "seed_b": 7,
+          "winner": "Alicia"
+        },
+        {
+          "round": 2,
+          "slot": 4,
+          "a": "Sander",
+          "b": "Bogdan",
+          "seed_a": 3,
+          "seed_b": 6,
+          "winner": "Bogdan"
+        },
+        {
+          "round": 3,
+          "slot": 1,
+          "a": "Stefan",
+          "b": "Aitor",
+          "seed_a": 1,
+          "seed_b": 5,
+          "winner": "Stefan"
+        },
+        {
+          "round": 3,
+          "slot": 2,
+          "a": "Alicia",
+          "b": "Bogdan",
+          "seed_a": 2,
+          "seed_b": 6,
+          "winner": "Bogdan"
+        },
+        {
+          "round": 4,
+          "slot": 1,
+          "a": "Stefan",
+          "b": "Bogdan",
+          "seed_a": 1,
+          "seed_b": 6,
+          "winner": "Stefan"
+        },
+        {
+          "round": 4,
+          "slot": 2,
+          "a": "Alicia",
+          "b": "Aitor",
+          "seed_a": 2,
+          "seed_b": 5,
+          "winner": "Alicia",
+          "medal_game": true,
+          "label": "Bronze medal game"
+        }
+      ]
+    },
+    "B": {
+      "format": "double_elim",
+      "_comment": "Seeds are the player's rank within their own sub-group, B (X) or B (Z), as printed on the brackets.",
+      "entrants": [
+        {
+          "seed": 1,
+          "name": "Steve",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 2,
+          "name": "Terry",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 3,
+          "name": "Sean P",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 4,
+          "name": "Keyes",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 5,
+          "name": "Dan",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 6,
+          "name": "Alejandra",
+          "sub_group": "B (X)"
+        },
+        {
+          "seed": 1,
+          "name": "Ryan",
+          "sub_group": "B (Z)"
+        },
+        {
+          "seed": 2,
+          "name": "Paul",
+          "sub_group": "B (Z)"
+        },
+        {
+          "seed": 3,
+          "name": "Axel",
+          "sub_group": "B (Z)"
+        },
+        {
+          "seed": 4,
+          "name": "James",
+          "sub_group": "B (Z)"
+        },
+        {
+          "seed": 5,
+          "name": "Matt",
+          "sub_group": "B (Z)"
+        },
+        {
+          "seed": 6,
+          "name": "Lenny",
+          "sub_group": "B (Z)"
+        }
+      ],
+      "placements": [
+        {
+          "place": 1,
+          "name": "Ryan"
+        },
+        {
+          "place": 2,
+          "name": "Terry"
+        },
+        {
+          "place": 3,
+          "name": "Steve"
+        }
+      ],
+      "winners": [
+        {
+          "round": 1,
+          "slot": 1,
+          "a": "James",
+          "b": "Dan",
+          "winner": "James"
+        },
+        {
+          "round": 1,
+          "slot": 2,
+          "a": "Sean P",
+          "b": "Lenny",
+          "winner": "Lenny"
+        },
+        {
+          "round": 1,
+          "slot": 3,
+          "a": "Keyes",
+          "b": "Matt",
+          "winner": "Keyes"
+        },
+        {
+          "round": 1,
+          "slot": 4,
+          "a": "Axel",
+          "b": "Alejandra",
+          "winner": "Axel"
+        },
+        {
+          "round": 2,
+          "slot": 1,
+          "a": "Steve",
+          "b": "James",
+          "winner": "Steve"
+        },
+        {
+          "round": 2,
+          "slot": 2,
+          "a": "Lenny",
+          "b": "Paul",
+          "winner": "Lenny"
+        },
+        {
+          "round": 2,
+          "slot": 3,
+          "a": "Ryan",
+          "b": "Keyes",
+          "winner": "Ryan"
+        },
+        {
+          "round": 2,
+          "slot": 4,
+          "a": "Axel",
+          "b": "Terry",
+          "winner": "Terry"
+        },
+        {
+          "round": 3,
+          "slot": 1,
+          "a": "Steve",
+          "b": "Lenny",
+          "winner": "Steve"
+        },
+        {
+          "round": 3,
+          "slot": 2,
+          "a": "Ryan",
+          "b": "Terry",
+          "winner": "Terry"
+        },
+        {
+          "round": 4,
+          "slot": 1,
+          "a": "Steve",
+          "b": "Terry",
+          "winner": "Terry",
+          "label": "Winners final"
+        }
+      ],
+      "losers": [
+        {
+          "round": 1,
+          "slot": 1,
+          "a": "Matt",
+          "b": "Paul",
+          "winner": "Matt"
+        },
+        {
+          "round": 1,
+          "slot": 2,
+          "a": "Alejandra",
+          "b": "James",
+          "winner": "Alejandra"
+        },
+        {
+          "round": 1,
+          "slot": 3,
+          "a": "Dan",
+          "b": "Axel",
+          "winner": "Axel"
+        },
+        {
+          "round": 1,
+          "slot": 4,
+          "a": "Sean P",
+          "b": "Keyes",
+          "winner": "Sean P"
+        },
+        {
+          "round": 2,
+          "slot": 1,
+          "a": "Matt",
+          "b": "Alejandra",
+          "winner": "Matt"
+        },
+        {
+          "round": 2,
+          "slot": 2,
+          "a": "Axel",
+          "b": "Sean P",
+          "winner": "Sean P"
+        },
+        {
+          "round": 3,
+          "slot": 1,
+          "a": "Ryan",
+          "b": "Matt",
+          "winner": "Ryan"
+        },
+        {
+          "round": 3,
+          "slot": 2,
+          "a": "Sean P",
+          "b": "Lenny",
+          "winner": "Sean P"
+        },
+        {
+          "round": 4,
+          "slot": 1,
+          "a": "Ryan",
+          "b": "Sean P",
+          "winner": "Ryan"
+        },
+        {
+          "round": 5,
+          "slot": 1,
+          "a": "Steve",
+          "b": "Ryan",
+          "winner": "Ryan",
+          "label": "Losers final"
+        },
+        {
+          "round": 6,
+          "slot": 1,
+          "a": "Ryan",
+          "b": "Terry",
+          "winner": "Ryan",
+          "label": "Grand final"
+        }
+      ],
+      "consolation": {
+        "_comment": "A B division consolation bracket existed; only its top two are known, from TournamentResults.pdf.",
+        "entrants": [
+          {
+            "name": "Jayson",
+            "source": "TournamentResults.pdf"
+          },
+          {
+            "name": "Brian",
+            "source": "TournamentResults.pdf"
+          }
+        ],
+        "placements": [
+          {
+            "place": 1,
+            "name": "Jayson",
+            "source": "TournamentResults.pdf"
+          },
+          {
+            "place": 2,
+            "name": "Brian",
+            "source": "TournamentResults.pdf"
+          }
+        ],
+        "matches": []
+      }
+    }
+  }
+}

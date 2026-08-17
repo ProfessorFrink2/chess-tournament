@@ -1,0 +1,62 @@
+{
+  "tournament": 13,
+  "name": "Tournament 13",
+  "format": "random_wheel",
+  "sources": [
+    "_originals/email-random-wheel-9-11-13-15.pdf"
+  ],
+  "notes": [
+    "STANDALONE \u2014 no league standings, so no season.",
+    "'Random wheel' format: pairings drawn at random rather than seeded.",
+    "The ENTIRE surviving record is the top three, listed in the body of a forwarded email. There is no bracket, no full entrant list, no scores and no match data. Only the three medallists are imported.",
+    "Usernames are carried over from the standings sheets of other tournaments in which these same people appear."
+  ],
+  "season": null,
+  "roster": [
+    {
+      "name": "Andriy",
+      "username": "SYROTEI"
+    },
+    {
+      "name": "Rob",
+      "username": "Robmon13"
+    },
+    {
+      "name": "Shawn B",
+      "username": "shawnmatthewbell"
+    }
+  ],
+  "standings": {},
+  "divisions": {
+    "_overall": {
+      "format": "random_wheel",
+      "division": null,
+      "entrants": [
+        {
+          "name": "Andriy"
+        },
+        {
+          "name": "Rob"
+        },
+        {
+          "name": "Shawn B"
+        }
+      ],
+      "placements": [
+        {
+          "place": 1,
+          "name": "Andriy"
+        },
+        {
+          "place": 2,
+          "name": "Rob"
+        },
+        {
+          "place": 3,
+          "name": "Shawn B"
+        }
+      ],
+      "matches": []
+    }
+  }
+}
