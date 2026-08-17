@@ -39,6 +39,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   const [addSeed, setAddSeed] = useState('')
   const [customDivision, setCustomDivision] = useState('')
   const [seasonStandings, setSeasonStandings] = useState<(SeasonStanding & { player: { id: string; display_name: string } | null })[]>([])
+  const [seasonMatchPlayers, setSeasonMatchPlayers] = useState<Player[]>([])
   const [showBracketPreview, setShowBracketPreview] = useState(false)
 
   const load = useCallback(async () => {
@@ -76,8 +77,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
 
     // Load season participants if this tournament is linked to a season.
     // Historic seasons store results in season_standings; live seasons store
-    // them in matches (white_player_id / black_player_id). Try standings first,
-    // fall back to distinct players from matches.
+    // them in matches. Try standings first, fall back to match participants.
     if (tournament?.season_id) {
       const { data: standings } = await supabase
         .from('season_standings')
@@ -85,32 +85,34 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         .eq('season_id', tournament.season_id)
         .order('rank')
       if (standings && standings.length > 0) {
-        setSeasonStandings((standings) as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+        setSeasonStandings(standings as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+        setSeasonMatchPlayers([])
       } else {
         // Live season: derive participants from match history.
         const { data: matchRows } = await supabase
           .from('matches')
-          .select('white_player_id, black_player_id')
+          .select('white_player_id, black_player_id, bracket, result')
           .eq('season_id', tournament.season_id)
         const ids = new Set<string>()
         for (const m of matchRows ?? []) {
           if (m.white_player_id) ids.add(m.white_player_id)
           if (m.black_player_id) ids.add(m.black_player_id)
         }
-        // Synthesise minimal SeasonStanding-shaped rows so seasonPlayerIds works.
-        const synthetic = [...ids].map((pid) => ({
-          id: pid,
-          season_id: tournament.season_id,
-          division: '',
-          player_id: pid,
-          rank: 0,
-          wins: 0, draws: 0, losses: 0, points: 0,
-          player: { id: pid, display_name: '' },
-        }))
-        setSeasonStandings(synthetic as unknown as (SeasonStanding & { player: { id: string; display_name: string } | null })[])
+        if (ids.size > 0) {
+          const { data: seasonPs } = await supabase
+            .from('players')
+            .select('*')
+            .in('id', [...ids])
+            .order('display_name')
+          setSeasonMatchPlayers((seasonPs ?? []) as Player[])
+        } else {
+          setSeasonMatchPlayers([])
+        }
+        setSeasonStandings([])
       }
     } else {
       setSeasonStandings([])
+      setSeasonMatchPlayers([])
     }
 
     setLoading(false)
@@ -176,21 +178,59 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   }
 
   async function importFromSeason(division: DivisionKey) {
+    setStatus('Importing…')
+
+    let rows: { tournament_id: string; division: string | null; bracket_kind: string; player_id: string; seed: number }[]
+
     const divStandings = seasonStandings.filter((s) => s.division === division)
-    if (divStandings.length === 0) {
-      setStatus(`No standings for division ${division} in the linked season`)
+    if (divStandings.length > 0) {
+      // Historic season: use pre-computed standings.
+      rows = divStandings
+        .filter((s) => s.player?.id)
+        .map((s) => ({
+          tournament_id: id,
+          division: activeDivision,
+          bracket_kind: entrantBracketFor(activeKind),
+          player_id: s.player!.id,
+          seed: s.rank,
+        }))
+    } else if (tournament?.season_id) {
+      // Live season: compute standings from match history for this division.
+      const { data: matchRows } = await supabase
+        .from('matches')
+        .select('white_player_id, black_player_id, result, bracket')
+        .eq('season_id', tournament.season_id)
+        .eq('bracket', division)
+      if (!matchRows || matchRows.length === 0) {
+        setStatus(`No matches found for division ${division} in the linked season`)
+        return
+      }
+      const points: Record<string, number> = {}
+      for (const m of matchRows) {
+        if (m.white_player_id) points[m.white_player_id] ??= 0
+        if (m.black_player_id) points[m.black_player_id] ??= 0
+        if (m.result === 'white_wins') { points[m.white_player_id] += 2 }
+        else if (m.result === 'black_wins') { points[m.black_player_id] += 2 }
+        else if (m.result === 'draw') {
+          points[m.white_player_id] += 1
+          points[m.black_player_id] += 1
+        }
+      }
+      const ranked = Object.entries(points)
+        .sort((a, b) => b[1] - a[1])
+        .map(([player_id], i) => ({
+          tournament_id: id,
+          division: activeDivision,
+          bracket_kind: entrantBracketFor(activeKind),
+          player_id,
+          seed: i + 1,
+        }))
+      rows = ranked
+    } else {
+      setStatus('No season linked to this tournament')
       return
     }
-    setStatus('Importing…')
-    const rows = divStandings
-      .filter((s) => s.player?.id)
-      .map((s) => ({
-        tournament_id: id,
-        division: activeDivision,
-        bracket_kind: entrantBracketFor(activeKind),
-        player_id: s.player!.id,
-        seed: s.rank,
-      }))
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase.from('tournament_entrants').upsert(rows as any, {
       onConflict: 'tournament_id,division,bracket_kind,player_id',
@@ -249,7 +289,11 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     (m) => m.division === activeDivision && m.bracket_kind === activeKind
   )
   const entrantPlayerIds = new Set(divisionEntrants.map((e) => e.player_id))
-  const seasonPlayerIds = new Set(seasonStandings.map((s) => s.player?.id).filter(Boolean))
+  // Either historic (from season_standings) or live (from match participants).
+  const seasonPlayerIds = new Set<string>([
+    ...seasonStandings.map((s) => s.player?.id).filter((x): x is string => Boolean(x)),
+    ...seasonMatchPlayers.map((p) => p.id),
+  ])
   const availablePlayers = players
     .filter((p) => !entrantPlayerIds.has(p.id))
     .sort((a, b) => {
@@ -362,7 +406,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
               — {divisionLabel(activeDivision)} · {entrantBracketFor(activeKind) === 'consolation' ? 'Consolation' : 'Main draw'}
             </span>
           </h2>
-          {seasonStandings.length > 0 && activeDivision && (
+          {(seasonStandings.length > 0 || seasonMatchPlayers.length > 0) && activeDivision && (
             <button
               onClick={() => importFromSeason(activeDivision)}
               className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700"
