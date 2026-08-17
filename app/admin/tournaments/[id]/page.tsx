@@ -259,6 +259,9 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     destMatchId: string, destSide: 'a' | 'b', playerId: string,
     srcMatchId?: string, srcSide?: 'a' | 'b'
   ) {
+    // Dropping onto your own match's other side is a no-op (same player both sides = constraint violation).
+    if (srcMatchId === destMatchId) return
+
     const destMatch = matches.find((m) => m.id === destMatchId)
     const srcMatch = srcMatchId ? matches.find((m) => m.id === srcMatchId) : undefined
     const displaced = destSide === 'a' ? destMatch?.player_a_id : destMatch?.player_b_id
@@ -298,14 +301,44 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   async function clearPlayerFromSlot(matchId: string, side: 'a' | 'b') {
     const m = matches.find((x) => x.id === matchId)
     if (!m) return
+    const removedId = side === 'a' ? m.player_a_id : m.player_b_id
+    const removedSeed = side === 'a' ? m.seed_a : m.seed_b
     const otherId = side === 'a' ? m.player_b_id : m.player_a_id
-    if (otherId) {
-      // Auto-advance the remaining player as winner (bye).
+
+    if (otherId && removedId) {
+      // Two players in the same match — split into two vs-bye matches.
+      // Clear the removed player from this match; they get their own new match.
       await updateMatch(matchId, side === 'a'
-        ? { player_a_id: null, seed_a: null, winner_id: otherId }
-        : { player_b_id: null, seed_b: null, winner_id: otherId })
+        ? { player_a_id: null, seed_a: null }
+        : { player_b_id: null, seed_b: null })
+
+      // Find a free slot number in the same round (not taken by existing matches).
+      const sameRound = matches.filter(
+        (x) => x.round === m.round && x.division === m.division && x.bracket_kind === m.bracket_kind
+      )
+      const usedSlots = new Set(sameRound.map((x) => x.slot))
+      let newSlot = 1
+      while (usedSlots.has(newSlot)) newSlot++
+
+      await supabase.from('tournament_matches').insert({
+        tournament_id: m.tournament_id,
+        division: m.division,
+        bracket_kind: m.bracket_kind,
+        round: m.round,
+        slot: newSlot,
+        player_a_id: removedId,
+        player_b_id: null,
+        seed_a: removedSeed,
+        seed_b: null,
+        score_a: null,
+        score_b: null,
+        winner_id: null,
+        is_medal_game: false,
+        label: null,
+        next_match_id: null,
+      })
     } else {
-      // Both sides would be empty — delete the match.
+      // Only one player (or neither) — just delete the match.
       await supabase.from('tournament_matches').delete().eq('id', matchId)
     }
     load()
