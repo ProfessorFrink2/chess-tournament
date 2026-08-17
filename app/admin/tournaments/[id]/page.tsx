@@ -259,11 +259,23 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     destMatchId: string, destSide: 'a' | 'b', playerId: string,
     srcMatchId?: string, srcSide?: 'a' | 'b'
   ) {
-    // Write destination first, then clear source (if it's a different slot).
+    // Write destination.
     await updateMatch(destMatchId, destSide === 'a' ? { player_a_id: playerId } : { player_b_id: playerId })
+
     if (srcMatchId && srcSide && (srcMatchId !== destMatchId || srcSide !== destSide)) {
-      await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+      const srcMatch = matches.find((m) => m.id === srcMatchId)
+      const otherPlayerId = srcSide === 'a' ? srcMatch?.player_b_id : srcMatch?.player_a_id
+
+      if (!otherPlayerId) {
+        // Source match is now completely empty — delete it to clean up the bracket.
+        await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
+      } else {
+        await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+      }
     }
+
+    // Reload to get fresh joined player objects (optimistic state only updates IDs, not names).
+    load()
   }
 
   async function resetBracketPlayers() {
