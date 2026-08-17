@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { VERSION } from '@/lib/version'
 
 export default function Nav() {
   const [user, setUser] = useState<{ email: string; role: string } | null>(null)
@@ -35,6 +36,7 @@ export default function Nav() {
         <Link href="/" className="font-bold text-lg text-white tracking-tight">
           ♟ Chess Tournament
         </Link>
+        <span className="text-gray-600 text-xs">{VERSION}</span>
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-gray-400 hover:text-white transition-colors">Brackets</Link>
           <Link href="/tournaments" className="text-gray-400 hover:text-white transition-colors">Tournaments</Link>
