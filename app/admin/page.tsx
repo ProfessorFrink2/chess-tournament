@@ -49,8 +49,8 @@ export default function AdminPage() {
     setLoading(true)
     const [{ data: ps }, { data: ss }, { data: ts }, adminsRes] = await Promise.all([
       supabase.from('players').select('*').order('display_name'),
-      supabase.from('seasons').select('*').order('created_at', { ascending: false }),
-      supabase.from('tournaments').select('*').order('number', { ascending: false }),
+      supabase.from('seasons').select('*').order('created_at', { ascending: true }),
+      supabase.from('tournaments').select('*').order('number', { ascending: true }),
       fetch('/api/players/admins').then(r => r.json()),
     ])
     const players = (ps ?? []) as Player[]
