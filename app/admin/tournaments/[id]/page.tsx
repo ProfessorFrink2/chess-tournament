@@ -528,10 +528,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
               {showBracketPreview ? 'Hide bracket preview' : 'Show bracket preview'}
             </button>
             {showBracketPreview && (
-              <div className="border border-gray-800 rounded p-4 bg-gray-950 overflow-x-auto">
-                <p className="text-xs text-gray-500 mb-3">
-                  Drag an entrant from the list above and drop onto a TBD slot to assign them.
-                </p>
+              <div className="border border-gray-800 rounded px-4 pb-4 pt-2 bg-gray-950 overflow-x-auto">
                 <TournamentBracket
                   matches={divisionMatches}
                   bracketKind={activeKind}

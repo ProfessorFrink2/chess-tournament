@@ -171,35 +171,53 @@ function MatchCard({
 
 /** Work out which earlier match each player arrived from.
  *
- *  Deliberately derived from results rather than from slot arithmetic. Several
- *  of these brackets are irregular — tournament 14's A division has rounds of
- *  4, 4, 2, 2, 2 because byes are staggered — so the usual "match s feeds
- *  match ceil(s/2)" rule would draw the wrong lines. A player with a bye simply
- *  has no source match, and correctly gets no line.
+ *  Prefers next_match_id (the FK set at bracket-generation time) so the graph
+ *  is correct even when no results have been entered yet. Falls back to tracing
+ *  winner_id through round history for historic data that predates the FK.
+ *  A player with a bye has no source match and correctly gets no line.
  */
 function deriveEdges(matches: TournamentMatchWithPlayers[]): Array<{ from: string; to: string }> {
-  const byRound = new Map<number, TournamentMatchWithPlayers[]>()
-  for (const m of matches) {
-    if (!byRound.has(m.round)) byRound.set(m.round, [])
-    byRound.get(m.round)!.push(m)
-  }
-  const rounds = [...byRound.keys()].sort((a, b) => a - b)
   const edges: Array<{ from: string; to: string }> = []
+  const seen = new Set<string>()
 
-  for (let i = 1; i < rounds.length; i++) {
-    const target = byRound.get(rounds[i])!
-    for (const m of target) {
-      for (const playerId of [m.player_a_id, m.player_b_id]) {
-        if (!playerId) continue
-        // Nearest earlier round in which this player won something.
-        let source: TournamentMatchWithPlayers | undefined
-        for (let j = i - 1; j >= 0 && !source; j--) {
-          source = byRound.get(rounds[j])!.find((p) => p.winner_id === playerId)
-        }
-        if (source) edges.push({ from: source.id, to: m.id })
+  // Primary: structural FK — winner of `from` advances to `to`.
+  for (const m of matches) {
+    if (m.next_match_id) {
+      const key = `${m.id}->${m.next_match_id}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        edges.push({ from: m.id, to: m.next_match_id })
       }
     }
   }
+
+  // Fallback: trace results for historic matches that have no next_match_id.
+  const withoutFk = matches.filter((m) => !m.next_match_id)
+  if (withoutFk.length > 0) {
+    const byRound = new Map<number, TournamentMatchWithPlayers[]>()
+    for (const m of matches) {
+      if (!byRound.has(m.round)) byRound.set(m.round, [])
+      byRound.get(m.round)!.push(m)
+    }
+    const rounds = [...byRound.keys()].sort((a, b) => a - b)
+    for (let i = 1; i < rounds.length; i++) {
+      const target = byRound.get(rounds[i])!
+      for (const m of target) {
+        for (const playerId of [m.player_a_id, m.player_b_id]) {
+          if (!playerId) continue
+          let source: TournamentMatchWithPlayers | undefined
+          for (let j = i - 1; j >= 0 && !source; j--) {
+            source = byRound.get(rounds[j])!.find((p) => p.winner_id === playerId)
+          }
+          if (source) {
+            const key = `${source.id}->${m.id}`
+            if (!seen.has(key)) { seen.add(key); edges.push({ from: source.id, to: m.id }) }
+          }
+        }
+      }
+    }
+  }
+
   return edges
 }
 
@@ -513,7 +531,7 @@ export default function TournamentBracket({
                 .sort((a, b) => a.round - b.round || a.slot - b.slot)
               return (
               <div key={col} className="flex flex-col relative">
-                <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-3">
+                <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-1.5">
                   {columnHeading(col, colIndex, bracketKind, inRound)}
                 </h4>
                 {/* Absolute rows: a match sits against the matches that fed
