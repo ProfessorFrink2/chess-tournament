@@ -180,29 +180,48 @@ function MatchCard({
   const w = wide ? 'w-64' : 'w-44'
   const playerA = m.player_a ? { ...m.player_a, id: m.player_a_id ?? undefined } : null
   const playerB = m.player_b ? { ...m.player_b, id: m.player_b_id ?? undefined } : null
+
+  // In leaf-column matches always render the real player on top, bye on bottom.
+  const swapForBye = isLeafCol && !m.player_a_id && !!m.player_b_id
+  const topPlayer = swapForBye ? playerB : playerA
+  const topSeed = swapForBye ? m.seed_b : m.seed_a
+  const topScore = swapForBye ? m.score_b : m.score_a
+  const topSide: 'a' | 'b' = swapForBye ? 'b' : 'a'
+  const topIsWinner = decided && m.winner_id === (swapForBye ? m.player_b_id : m.player_a_id)
+  const topStat = (swapForBye ? m.player_b_id : m.player_a_id)
+    ? playerStats?.get((swapForBye ? m.player_b_id : m.player_a_id)!) : undefined
+
+  const botPlayer = swapForBye ? playerA : playerB
+  const botSeed = swapForBye ? m.seed_a : m.seed_b
+  const botScore = swapForBye ? m.score_a : m.score_b
+  const botSide: 'a' | 'b' = swapForBye ? 'a' : 'b'
+  const botIsWinner = decided && m.winner_id === (swapForBye ? m.player_a_id : m.player_b_id)
+  const botStat = (swapForBye ? m.player_a_id : m.player_b_id)
+    ? playerStats?.get((swapForBye ? m.player_a_id : m.player_b_id)!) : undefined
+
   return (
     <div className={`border border-gray-800 rounded bg-gray-900 text-sm divide-y divide-gray-800 ${w} max-w-full`}>
       <Side
-        player={playerA}
-        seed={m.seed_a}
-        score={m.score_a}
-        isWinner={decided && m.winner_id === m.player_a_id}
+        player={topPlayer}
+        seed={topSeed}
+        score={topScore}
+        isWinner={topIsWinner}
         decided={decided}
-        stat={m.player_a_id ? playerStats?.get(m.player_a_id) : undefined}
+        stat={topStat}
         wide={wide}
-        isBye={isLeafCol && !m.player_a_id}
-        matchId={m.id} side="a" onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
+        isBye={isLeafCol && !topPlayer}
+        matchId={m.id} side={topSide} onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
       />
       <Side
-        player={playerB}
-        seed={m.seed_b}
-        score={m.score_b}
-        isWinner={decided && m.winner_id === m.player_b_id}
+        player={botPlayer}
+        seed={botSeed}
+        score={botScore}
+        isWinner={botIsWinner}
         decided={decided}
-        stat={m.player_b_id ? playerStats?.get(m.player_b_id) : undefined}
+        stat={botStat}
         wide={wide}
-        isBye={isLeafCol && !m.player_b_id}
-        matchId={m.id} side="b" onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
+        isBye={isLeafCol && !botPlayer}
+        matchId={m.id} side={botSide} onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
       />
     </div>
   )
