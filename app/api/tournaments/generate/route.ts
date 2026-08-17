@@ -78,9 +78,21 @@ export async function POST(req: NextRequest) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await db.from('tournament_matches').insert(matchRows as any)
+  const { data: inserted, error } = await db.from('tournament_matches').insert(matchRows as any).select('id, round, slot')
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Wire next_match_id: slot S in round R advances to slot ceil(S/2) in round R+1.
+  const byRoundSlot = new Map<string, string>()
+  for (const m of inserted ?? []) {
+    byRoundSlot.set(`${m.round}:${m.slot}`, m.id)
+  }
+  for (const m of inserted ?? []) {
+    const nextId = byRoundSlot.get(`${m.round + 1}:${Math.ceil(m.slot / 2)}`)
+    if (!nextId) continue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.from('tournament_matches').update({ next_match_id: nextId } as any).eq('id', m.id)
   }
 
   return NextResponse.json({ created: matchRows.length })
