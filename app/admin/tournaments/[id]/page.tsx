@@ -287,21 +287,21 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         if (feeders.length === 1) {
           const feeder = feeders[0]
           if (feeder.player_a_id && feeder.player_b_id) {
-            // Split: remove player_b from feeder, create new sibling match for player_b.
-            const usedSlots = new Set(group.map((m) => m.slot))
-            let newSlot = 1
-            while (usedSlots.has(newSlot)) newSlot++
+            // The sibling slot is the paired partner: odd → slot+1, even → slot-1.
+            const siblingSlot = feeder.slot % 2 === 1 ? feeder.slot + 1 : feeder.slot - 1
 
+            // Clear player_b from the existing match (keep next_match_id intact).
             await supabase.from('tournament_matches')
               .update({ player_b_id: null, seed_b: null })
               .eq('id', feeder.id)
 
+            // Create the sibling match with the displaced player, wired to the same Round 2 match.
             await supabase.from('tournament_matches').insert({
               tournament_id: feeder.tournament_id,
               division: feeder.division,
               bracket_kind: feeder.bracket_kind,
               round: feeder.round,
-              slot: newSlot,
+              slot: siblingSlot,
               player_a_id: feeder.player_b_id,
               player_b_id: null,
               seed_a: feeder.seed_b,
@@ -311,7 +311,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
               winner_id: null,
               is_medal_game: false,
               label: null,
-              next_match_id: null,
+              next_match_id: r2.id,
             })
             didSplit = true
           }
