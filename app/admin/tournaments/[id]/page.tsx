@@ -442,14 +442,6 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
                 className="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-xs"
               />
               <span className="flex-1 truncate">{e.player?.display_name}</span>
-              <label className="text-xs text-gray-500">place</label>
-              <input
-                type="number"
-                value={e.final_placement ?? ''}
-                placeholder="—"
-                onChange={(ev) => updateEntrant(e.id, { final_placement: ev.target.value ? parseInt(ev.target.value, 10) : null })}
-                className="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-xs"
-              />
               <button onClick={() => removeEntrant(e.id)} className="text-xs text-red-500 hover:text-red-400">×</button>
             </div>
           ))}
