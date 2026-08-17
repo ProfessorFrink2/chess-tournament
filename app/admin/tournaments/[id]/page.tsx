@@ -341,11 +341,6 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     const destMatch = matches.find((m) => m.id === destMatchId)
     const srcMatch = srcMatchId ? matches.find((m) => m.id === srcMatchId) : undefined
     const displaced = destSide === 'a' ? destMatch?.player_a_id : destMatch?.player_b_id
-    const destOtherSideId = destSide === 'a' ? destMatch?.player_b_id : destMatch?.player_a_id
-
-    // Block dropping a player into a bye slot when the other side of that match already
-    // has a real player — this would re-create the two-players-in-one-match problem.
-    if (!displaced && destOtherSideId) return
     const destSeed = destSide === 'a' ? destMatch?.seed_a : destMatch?.seed_b
     const srcSeed = srcSide ? (srcSide === 'a' ? srcMatch?.seed_a : srcMatch?.seed_b) : undefined
 
@@ -375,6 +370,18 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         }
       }
     }
+
+    // If the drop created a two-player match that is the sole feeder into a Round 2 slot,
+    // auto-split it (e.g. dragging into a bye slot of a match that already has a player).
+    // Fetch fresh matches from DB so the split logic sees accurate state.
+    const { data: fresh } = await supabase
+      .from('tournament_matches')
+      .select('*, player_a:players!player_a_id(id, display_name, chess_com_username), player_b:players!player_b_id(id, display_name, chess_com_username)')
+      .eq('tournament_id', id)
+      .order('round').order('slot')
+    const freshMatches = (fresh ?? []) as unknown as TournamentMatchWithPlayers[]
+    setMatches(freshMatches)
+    await autoSplitOvercrowdedMatches(freshMatches)
   }
 
   async function clearPlayerFromSlot(matchId: string, side: 'a' | 'b') {
