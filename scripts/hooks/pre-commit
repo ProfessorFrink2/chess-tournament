@@ -1,0 +1,23 @@
+#!/bin/sh
+# Auto-increment the minor version in lib/version.ts on every commit.
+# Install: cp scripts/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+VERSION_FILE="lib/version.ts"
+
+# Extract current version string, e.g. v1.2
+current=$(grep -o "'v[0-9]*\.[0-9]*'" "$VERSION_FILE" | tr -d "'")
+if [ -z "$current" ]; then
+  echo "pre-commit: could not find version in $VERSION_FILE — skipping bump"
+  exit 0
+fi
+
+major=$(echo "$current" | sed 's/v\([0-9]*\)\..*/\1/')
+minor=$(echo "$current" | sed 's/v[0-9]*\.\([0-9]*\)/\1/')
+new_minor=$((minor + 1))
+new_version="v${major}.${new_minor}"
+
+# Replace in file (macOS-compatible)
+sed -i '' "s/'${current}'/'${new_version}'/" "$VERSION_FILE"
+git add "$VERSION_FILE"
+
+echo "pre-commit: version bumped ${current} → ${new_version}"
