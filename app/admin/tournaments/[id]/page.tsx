@@ -222,7 +222,16 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     (m) => m.division === activeDivision && m.bracket_kind === activeKind
   )
   const entrantPlayerIds = new Set(divisionEntrants.map((e) => e.player_id))
-  const availablePlayers = players.filter((p) => !entrantPlayerIds.has(p.id))
+  const seasonPlayerIds = new Set(seasonStandings.map((s) => s.player?.id).filter(Boolean))
+  const availablePlayers = players
+    .filter((p) => !entrantPlayerIds.has(p.id))
+    .sort((a, b) => {
+      // Season participants float to the top when there's a linked season.
+      const aIn = seasonPlayerIds.has(a.id)
+      const bIn = seasonPlayerIds.has(b.id)
+      if (aIn === bIn) return a.display_name.localeCompare(b.display_name)
+      return aIn ? -1 : 1
+    })
 
   return (
     <div className="space-y-8">
@@ -379,7 +388,16 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
             className="flex-1 min-w-48 bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white"
           >
             <option value="">Add a player…</option>
-            {availablePlayers.map((p) => (
+            {seasonPlayerIds.size > 0 && <option disabled>── Season participants ──</option>}
+            {availablePlayers.filter((p) => seasonPlayerIds.has(p.id)).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.display_name}{p.chess_com_username ? ` (${p.chess_com_username})` : ''}
+              </option>
+            ))}
+            {seasonPlayerIds.size > 0 && availablePlayers.some((p) => !seasonPlayerIds.has(p.id)) && (
+              <option disabled>── Other players ──</option>
+            )}
+            {availablePlayers.filter((p) => !seasonPlayerIds.has(p.id)).map((p) => (
               <option key={p.id} value={p.id}>
                 {p.display_name}{p.chess_com_username ? ` (${p.chess_com_username})` : ''}
               </option>
