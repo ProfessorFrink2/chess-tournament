@@ -260,24 +260,32 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     srcMatchId?: string, srcSide?: 'a' | 'b'
   ) {
     const destMatch = matches.find((m) => m.id === destMatchId)
+    const srcMatch = srcMatchId ? matches.find((m) => m.id === srcMatchId) : undefined
     const displaced = destSide === 'a' ? destMatch?.player_a_id : destMatch?.player_b_id
+    const destSeed = destSide === 'a' ? destMatch?.seed_a : destMatch?.seed_b
+    const srcSeed = srcSide ? (srcSide === 'a' ? srcMatch?.seed_a : srcMatch?.seed_b) : undefined
 
-    // Write the dragged player into the destination slot.
-    await updateMatch(destMatchId, destSide === 'a' ? { player_a_id: playerId } : { player_b_id: playerId })
+    // Write the dragged player into the destination slot, carrying their seed.
+    await updateMatch(destMatchId, destSide === 'a'
+      ? { player_a_id: playerId, seed_a: srcSeed ?? null }
+      : { player_b_id: playerId, seed_b: srcSeed ?? null })
 
     if (srcMatchId && srcSide && (srcMatchId !== destMatchId || srcSide !== destSide)) {
       if (displaced) {
-        // Swap: put the displaced player back into the source slot.
-        await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: displaced } : { player_b_id: displaced })
+        // Swap: put the displaced player back into the source slot, carrying dest seed.
+        await updateMatch(srcMatchId, srcSide === 'a'
+          ? { player_a_id: displaced, seed_a: destSeed ?? null }
+          : { player_b_id: displaced, seed_b: destSeed ?? null })
       } else {
-        // Destination was empty — just clear the source slot.
-        const srcMatch = matches.find((m) => m.id === srcMatchId)
+        // Destination was empty — clear the source slot (seed goes with the player).
         const otherInSrc = srcSide === 'a' ? srcMatch?.player_b_id : srcMatch?.player_a_id
         if (!otherInSrc) {
           // Source match now completely empty — delete it.
           await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
         } else {
-          await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+          await updateMatch(srcMatchId, srcSide === 'a'
+            ? { player_a_id: null, seed_a: null }
+            : { player_b_id: null, seed_b: null })
         }
       }
     }
@@ -323,7 +331,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
 
   async function updateMatch(
     matchId: string,
-    patch: Partial<Pick<TournamentMatchWithPlayers, 'score_a' | 'score_b' | 'winner_id' | 'player_a_id' | 'player_b_id'>>
+    patch: Partial<Pick<TournamentMatchWithPlayers, 'score_a' | 'score_b' | 'winner_id' | 'player_a_id' | 'player_b_id' | 'seed_a' | 'seed_b'>>
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase.from('tournament_matches').update(patch as any).eq('id', matchId)
@@ -476,6 +484,16 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Bracket is the primary UI — entrant rows are embedded as round-1 cards */}
+        {divisionMatches.length > 0 && (
+          <div className="flex gap-3 justify-end mb-1">
+            <button onClick={resetBracketPlayers} className="text-xs text-gray-600 hover:text-gray-400 underline">
+              Reset players
+            </button>
+            <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
+              Regenerate bracket
+            </button>
+          </div>
+        )}
         {divisionMatches.length > 0 ? (
           <div className="border border-gray-800 rounded px-4 pb-4 pt-2 bg-gray-950 overflow-x-auto">
             <TournamentBracket
@@ -515,16 +533,8 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         {/* Match score entry — shown below the bracket */}
         {divisionMatches.length > 0 && (
           <div className="mt-4 space-y-1">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <h3 className="text-xs uppercase tracking-wide text-gray-500">Match results</h3>
-              <div className="flex gap-3">
-                <button onClick={resetBracketPlayers} className="text-xs text-gray-600 hover:text-gray-400 underline">
-                  Reset players
-                </button>
-                <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
-                  Regenerate bracket
-                </button>
-              </div>
             </div>
             {divisionMatches.filter((m) => !m.is_medal_game).map((m) => (
               <div key={m.id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm flex-wrap">
