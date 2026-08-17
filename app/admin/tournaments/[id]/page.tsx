@@ -409,16 +409,18 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
             </select>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {(seasonStandings.length > 0 || seasonMatchPlayers.length > 0) && activeDivision && (
+            {(seasonStandings.length > 0 || seasonMatchPlayers.length > 0) && activeDivision && divisionMatches.length === 0 && (
               <button onClick={() => importFromSeason(activeDivision)}
                 className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700">
                 Seed from season standings
               </button>
             )}
-            <button onClick={generateBracket}
-              className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700">
-              Generate from seeds
-            </button>
+            {divisionMatches.length === 0 && (
+              <button onClick={generateBracket}
+                className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700">
+                Generate from seeds
+              </button>
+            )}
           </div>
         </div>
 
@@ -462,7 +464,12 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         {/* Match score entry — shown below the bracket */}
         {divisionMatches.length > 0 && (
           <div className="mt-4 space-y-1">
-            <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Match results</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs uppercase tracking-wide text-gray-500">Match results</h3>
+              <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
+                Regenerate bracket
+              </button>
+            </div>
             {divisionMatches.filter((m) => !m.is_medal_game).map((m) => (
               <div key={m.id} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded px-3 py-2 text-sm flex-wrap">
                 <span className="text-gray-600 text-xs w-14 shrink-0">R{m.round}·{m.slot}</span>
