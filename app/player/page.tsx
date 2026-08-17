@@ -423,7 +423,7 @@ export default function PlayerPage() {
                       </div>
                     </div>
                     <Link
-                      href={`/tournaments/${m.tournament_id}`}
+                      href={`/tournaments/${m.tournament_id}${m.division ? `?division=${encodeURIComponent(m.division)}` : ''}`}
                       className="text-xs text-blue-400 hover:underline shrink-0"
                     >
                       View bracket ↗
