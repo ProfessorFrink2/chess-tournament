@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { BRACKET_KIND_LABELS, FORMAT_LABELS, divisionLabel, entrantBracketFor } from '@/lib/tournaments'
 import TournamentBracket from '@/components/TournamentBracket'
-import type { PlayerStat } from '@/components/TournamentBracket'
+import type { PlayerStat, SlotClearHandler } from '@/components/TournamentBracket'
 import type {
   Bracket,
   BracketKind,
@@ -283,14 +283,31 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
           // Source match now completely empty — delete it.
           await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
         } else {
+          // One player remains alone — null out the moved side and auto-advance the remaining player.
           await updateMatch(srcMatchId, srcSide === 'a'
-            ? { player_a_id: null, seed_a: null }
-            : { player_b_id: null, seed_b: null })
+            ? { player_a_id: null, seed_a: null, winner_id: otherInSrc }
+            : { player_b_id: null, seed_b: null, winner_id: otherInSrc })
         }
       }
     }
 
     // Reload to get fresh joined player objects (display_name, not just IDs).
+    load()
+  }
+
+  async function clearPlayerFromSlot(matchId: string, side: 'a' | 'b') {
+    const m = matches.find((x) => x.id === matchId)
+    if (!m) return
+    const otherId = side === 'a' ? m.player_b_id : m.player_a_id
+    if (otherId) {
+      // Auto-advance the remaining player as winner (bye).
+      await updateMatch(matchId, side === 'a'
+        ? { player_a_id: null, seed_a: null, winner_id: otherId }
+        : { player_b_id: null, seed_b: null, winner_id: otherId })
+    } else {
+      // Both sides would be empty — delete the match.
+      await supabase.from('tournament_matches').delete().eq('id', matchId)
+    }
     load()
   }
 
@@ -501,6 +518,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
               bracketKind={activeKind}
               playerStats={playerStats.size > 0 ? playerStats : undefined}
               onSlotDrop={dropPlayerIntoSlot}
+              onSlotClear={clearPlayerFromSlot}
             />
           </div>
         ) : (

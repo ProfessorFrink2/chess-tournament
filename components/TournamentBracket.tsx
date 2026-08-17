@@ -79,6 +79,8 @@ export type SlotDropHandler = (
   srcMatchId?: string, srcSide?: 'a' | 'b'
 ) => void
 
+export type SlotClearHandler = (matchId: string, side: 'a' | 'b') => void
+
 function Side({
   player,
   seed,
@@ -87,9 +89,11 @@ function Side({
   decided,
   stat,
   wide,
+  isBye,
   matchId,
   side,
   onSlotDrop,
+  onSlotClear,
 }: {
   player: { id?: string; display_name: string } | null
   seed: number | null
@@ -98,9 +102,11 @@ function Side({
   decided: boolean
   stat?: PlayerStat
   wide?: boolean
+  isBye?: boolean
   matchId?: string
   side?: 'a' | 'b'
   onSlotDrop?: SlotDropHandler
+  onSlotClear?: SlotClearHandler
 }) {
   const [dragOver, setDragOver] = useState(false)
   const isDropTarget = !!onSlotDrop && !!matchId && !!side
@@ -131,17 +137,25 @@ function Side({
         if (pid) onSlotDrop!(matchId!, side!, pid, srcMatchId, srcSide)
       } : undefined}
     >
-      <span className={`truncate ${wide ? 'max-w-40' : ''}`}>
+      <span className={`truncate ${wide ? 'max-w-36' : ''}`}>
         {seed != null && <span className="text-gray-600 mr-1 tabular-nums">({seed})</span>}
-        {player?.display_name ?? <span className="text-gray-700 italic">TBD</span>}
+        {player?.display_name ?? <span className="text-gray-700 italic">{isBye ? 'bye' : 'TBD'}</span>}
       </span>
-      <span className="flex items-center gap-2 shrink-0">
+      <span className="flex items-center gap-1 shrink-0">
         {stat && wide && (
           <span className="text-xs text-gray-600 tabular-nums">
             {stat.w}W {stat.d}D {stat.l}L
           </span>
         )}
         <span className="tabular-nums text-xs">{score ?? ''}</span>
+        {onSlotClear && player && matchId && side && (
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onSlotClear(matchId, side) }}
+            className="text-gray-700 hover:text-red-500 leading-none px-0.5 text-xs"
+            title="Remove from slot"
+          >×</button>
+        )}
       </span>
     </div>
   )
@@ -150,13 +164,17 @@ function Side({
 function MatchCard({
   m,
   wide,
+  isLeafCol,
   playerStats,
   onSlotDrop,
+  onSlotClear,
 }: {
   m: TournamentMatchWithPlayers
   wide?: boolean
+  isLeafCol?: boolean
   playerStats?: Map<string, PlayerStat>
   onSlotDrop?: SlotDropHandler
+  onSlotClear?: SlotClearHandler
 }) {
   const decided = m.winner_id != null
   const w = wide ? 'w-64' : 'w-44'
@@ -172,7 +190,8 @@ function MatchCard({
         decided={decided}
         stat={m.player_a_id ? playerStats?.get(m.player_a_id) : undefined}
         wide={wide}
-        matchId={m.id} side="a" onSlotDrop={onSlotDrop}
+        isBye={isLeafCol && !m.player_a_id}
+        matchId={m.id} side="a" onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
       />
       <Side
         player={playerB}
@@ -182,7 +201,8 @@ function MatchCard({
         decided={decided}
         stat={m.player_b_id ? playerStats?.get(m.player_b_id) : undefined}
         wide={wide}
-        matchId={m.id} side="b" onSlotDrop={onSlotDrop}
+        isBye={isLeafCol && !m.player_b_id}
+        matchId={m.id} side="b" onSlotDrop={onSlotDrop} onSlotClear={onSlotClear}
       />
     </div>
   )
@@ -318,11 +338,13 @@ export default function TournamentBracket({
   bracketKind = 'championship',
   playerStats,
   onSlotDrop,
+  onSlotClear,
 }: {
   matches: TournamentMatchWithPlayers[]
   bracketKind?: string
   playerStats?: Map<string, PlayerStat>
   onSlotDrop?: SlotDropHandler
+  onSlotClear?: SlotClearHandler
 }) {
   const medalGames = useMemo(() => matches.filter((m) => m.is_medal_game), [matches])
   const bracketMatches = useMemo(() => matches.filter((m) => !m.is_medal_game), [matches])
@@ -489,7 +511,7 @@ export default function TournamentBracket({
                     {inRound.map((m) => (
                       <div key={m.id} className="absolute left-0" style={{ top: (rowOf.get(m.id) ?? 0) * ROW_H }}>
                         <div ref={setCardRef(m.id)}>
-                          <MatchCard m={m} wide={isFirst} playerStats={isFirst ? playerStats : undefined} onSlotDrop={onSlotDrop} />
+                          <MatchCard m={m} wide={isFirst} isLeafCol={isFirst} playerStats={isFirst ? playerStats : undefined} onSlotDrop={onSlotDrop} onSlotClear={onSlotClear} />
                         </div>
                       </div>
                     ))}
