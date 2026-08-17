@@ -530,7 +530,7 @@ export default function TournamentBracket({
                     {inRound.map((m) => (
                       <div key={m.id} className="absolute left-0" style={{ top: (rowOf.get(m.id) ?? 0) * ROW_H }}>
                         <div ref={setCardRef(m.id)}>
-                          <MatchCard m={m} wide={isFirst} isLeafCol={isFirst} playerStats={isFirst ? playerStats : undefined} onSlotDrop={onSlotDrop} onSlotClear={onSlotClear} />
+                          <MatchCard m={m} wide={isFirst} isLeafCol={isFirst} playerStats={isFirst ? playerStats : undefined} onSlotDrop={isFirst ? onSlotDrop : undefined} onSlotClear={isFirst ? onSlotClear : undefined} />
                         </div>
                       </div>
                     ))}
