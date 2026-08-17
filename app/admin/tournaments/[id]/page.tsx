@@ -341,6 +341,11 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     const destMatch = matches.find((m) => m.id === destMatchId)
     const srcMatch = srcMatchId ? matches.find((m) => m.id === srcMatchId) : undefined
     const displaced = destSide === 'a' ? destMatch?.player_a_id : destMatch?.player_b_id
+    const destOtherSideId = destSide === 'a' ? destMatch?.player_b_id : destMatch?.player_a_id
+
+    // Block dropping a player into a bye slot when the other side of that match already
+    // has a real player — this would re-create the two-players-in-one-match problem.
+    if (!displaced && destOtherSideId) return
     const destSeed = destSide === 'a' ? destMatch?.seed_a : destMatch?.seed_b
     const srcSeed = srcSide ? (srcSide === 'a' ? srcMatch?.seed_a : srcMatch?.seed_b) : undefined
 
@@ -381,12 +386,10 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
 
     if (otherId && removedId) {
       // Two players in the same match — split into two vs-bye matches.
-      // Clear the removed player from this match; they get their own new match.
       await updateMatch(matchId, side === 'a'
         ? { player_a_id: null, seed_a: null }
         : { player_b_id: null, seed_b: null })
 
-      // Find a free slot number in the same round (not taken by existing matches).
       const sameRound = matches.filter(
         (x) => x.round === m.round && x.division === m.division && x.bracket_kind === m.bracket_kind
       )
@@ -394,7 +397,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
       let newSlot = 1
       while (usedSlots.has(newSlot)) newSlot++
 
-      await supabase.from('tournament_matches').insert({
+      const { data: inserted } = await supabase.from('tournament_matches').insert({
         tournament_id: m.tournament_id,
         division: m.division,
         bracket_kind: m.bracket_kind,
@@ -410,12 +413,16 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         is_medal_game: false,
         label: null,
         next_match_id: null,
-      })
+      }).select('*, player_a:players!player_a_id(id, display_name, chess_com_username), player_b:players!player_b_id(id, display_name, chess_com_username)').single()
+
+      if (inserted) {
+        setMatches((prev) => [...prev, inserted as unknown as TournamentMatchWithPlayers])
+      }
     } else {
-      // Only one player (or neither) — just delete the match.
+      // Only one player (or neither) — delete the match.
       await supabase.from('tournament_matches').delete().eq('id', matchId)
+      setMatches((prev) => prev.filter((x) => x.id !== matchId))
     }
-    load()
   }
 
   async function resetBracketPlayers() {
