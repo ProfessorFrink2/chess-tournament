@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Player, MatchWithPlayers } from '@/lib/database.types'
+import { Player, MatchWithPlayers, TournamentMatchWithPlayers, Tournament } from '@/lib/database.types'
 import Link from 'next/link'
 
 interface ChessComGame {
@@ -41,6 +41,7 @@ export default function PlayerPage() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [allMatches, setAllMatches] = useState<MatchWithPlayers[]>([])
+  const [tournamentMatches, setTournamentMatches] = useState<(TournamentMatchWithPlayers & { tournament: Pick<Tournament, 'id' | 'name' | 'number'> | null })[]>([])
   const [chessGames, setChessGames] = useState<ChessComGame[]>([])
   const [usernameToName, setUsernameToName] = useState<Record<string, string>>({})
   const [chessLoading, setChessLoading] = useState(false)
@@ -83,18 +84,22 @@ export default function PlayerPage() {
       setUsernameToName(map)
     }
 
-    const { data: matches } = await supabase
-      .from('matches')
-      .select(`
-        *,
-        white_player:players!white_player_id(id, display_name, chess_com_username),
-        black_player:players!black_player_id(id, display_name, chess_com_username)
-      `)
-      .or(`white_player_id.eq.${p.id},black_player_id.eq.${p.id}`)
-      .order('scheduled_start', { ascending: true })
+    const [{ data: matches }, { data: tMatches }] = await Promise.all([
+      supabase
+        .from('matches')
+        .select(`*, white_player:players!white_player_id(id, display_name, chess_com_username), black_player:players!black_player_id(id, display_name, chess_com_username)`)
+        .or(`white_player_id.eq.${p.id},black_player_id.eq.${p.id}`)
+        .order('scheduled_start', { ascending: true }),
+      supabase
+        .from('tournament_matches')
+        .select(`*, player_a:players!player_a_id(id, display_name, chess_com_username), player_b:players!player_b_id(id, display_name, chess_com_username), tournament:tournaments(id, name, number)`)
+        .or(`player_a_id.eq.${p.id},player_b_id.eq.${p.id}`)
+        .order('round', { ascending: true }),
+    ])
 
-    const all = (matches ?? []) as MatchWithPlayers[]
-    setAllMatches(all)
+    setAllMatches((matches ?? []) as MatchWithPlayers[])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setTournamentMatches((tMatches ?? []) as any)
     setLoading(false)
 
     // Fetch chess.com game history in background
@@ -198,7 +203,7 @@ export default function PlayerPage() {
 
       {/* All matches */}
       <section>
-        <h2 className="text-lg font-semibold mb-3">Matches</h2>
+        <h2 className="text-lg font-semibold mb-3">Season Matches</h2>
         {allMatches.length === 0 ? (
           <p className="text-gray-500 text-sm">No matches scheduled yet.</p>
         ) : (
@@ -375,6 +380,61 @@ export default function PlayerPage() {
           </div>
         )}
       </section>
+
+      {/* Tournament matches */}
+      {tournamentMatches.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold mb-3">Tournament Matches</h2>
+          <div className="space-y-2">
+            {tournamentMatches.map((m) => {
+              const isA = m.player_a_id === player.id
+              const me = isA ? m.player_a : m.player_b
+              const opp = isA ? m.player_b : m.player_a
+              const myScore = isA ? m.score_a : m.score_b
+              const oppScore = isA ? m.score_b : m.score_a
+              const decided = m.winner_id != null
+              const iWon = decided && m.winner_id === player.id
+              const iLost = decided && m.winner_id !== player.id
+
+              return (
+                <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                          {m.tournament?.name ?? 'Tournament'}
+                          {m.division ? ` · Div ${m.division}` : ''}
+                          {' · '}R{m.round}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                        <span className="font-medium">{me?.display_name ?? player.display_name}</span>
+                        {decided && (
+                          <span className={`font-semibold text-sm uppercase tracking-wide ${iWon ? 'text-green-400' : iLost ? 'text-red-400' : 'text-gray-400'}`}>
+                            {iWon ? 'WIN' : iLost ? 'LOSS' : 'DRAW'}
+                          </span>
+                        )}
+                        <span className="text-gray-500">vs</span>
+                        <span className="font-medium">{opp?.display_name ?? 'TBD'}</span>
+                        {decided && myScore != null && oppScore != null && (
+                          <span className="text-xs text-gray-500">{myScore} – {oppScore}</span>
+                        )}
+                        {!decided && <span className="text-xs text-gray-600 italic">Pending</span>}
+                      </div>
+                    </div>
+                    <Link
+                      href={`/tournaments/${m.tournament_id}`}
+                      className="text-xs text-blue-400 hover:underline shrink-0"
+                    >
+                      View bracket ↗
+                    </Link>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Chess.com game history */}
       <section>
