@@ -259,22 +259,30 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     destMatchId: string, destSide: 'a' | 'b', playerId: string,
     srcMatchId?: string, srcSide?: 'a' | 'b'
   ) {
-    // Write destination.
+    const destMatch = matches.find((m) => m.id === destMatchId)
+    const displaced = destSide === 'a' ? destMatch?.player_a_id : destMatch?.player_b_id
+
+    // Write the dragged player into the destination slot.
     await updateMatch(destMatchId, destSide === 'a' ? { player_a_id: playerId } : { player_b_id: playerId })
 
     if (srcMatchId && srcSide && (srcMatchId !== destMatchId || srcSide !== destSide)) {
-      const srcMatch = matches.find((m) => m.id === srcMatchId)
-      const otherPlayerId = srcSide === 'a' ? srcMatch?.player_b_id : srcMatch?.player_a_id
-
-      if (!otherPlayerId) {
-        // Source match is now completely empty — delete it to clean up the bracket.
-        await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
+      if (displaced) {
+        // Swap: put the displaced player back into the source slot.
+        await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: displaced } : { player_b_id: displaced })
       } else {
-        await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+        // Destination was empty — just clear the source slot.
+        const srcMatch = matches.find((m) => m.id === srcMatchId)
+        const otherInSrc = srcSide === 'a' ? srcMatch?.player_b_id : srcMatch?.player_a_id
+        if (!otherInSrc) {
+          // Source match now completely empty — delete it.
+          await supabase.from('tournament_matches').delete().eq('id', srcMatchId)
+        } else {
+          await updateMatch(srcMatchId, srcSide === 'a' ? { player_a_id: null } : { player_b_id: null })
+        }
       }
     }
 
-    // Reload to get fresh joined player objects (optimistic state only updates IDs, not names).
+    // Reload to get fresh joined player objects (display_name, not just IDs).
     load()
   }
 
@@ -320,7 +328,11 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase.from('tournament_matches').update(patch as any).eq('id', matchId)
     if (error) { setStatus('Error: ' + error.message); return }
-    setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, ...patch } : m)))
+    // Only do optimistic updates for score/winner — player moves need a reload
+    // to get fresh joined player objects (display_name). Caller does load().
+    if ('score_a' in patch || 'score_b' in patch || 'winner_id' in patch) {
+      setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, ...patch } : m)))
+    }
   }
 
   if (loading) return <p className="text-gray-400">Loading…</p>
