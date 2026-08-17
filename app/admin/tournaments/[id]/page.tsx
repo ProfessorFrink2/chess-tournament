@@ -71,9 +71,14 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     const divs = (ds ?? []) as TournamentDivision[]
     setDivisions(divs)
     setEntrants((es ?? []) as unknown as TournamentEntrantWithPlayer[])
-    setMatches((ms ?? []) as unknown as TournamentMatchWithPlayers[])
+    const loadedMatches = (ms ?? []) as unknown as TournamentMatchWithPlayers[]
+    setMatches(loadedMatches)
     setPlayers((ps ?? []) as Player[])
     setActiveDivision((prev) => prev ?? divs[0]?.division ?? null)
+
+    // Auto-split any Round 1 match that has two real players but is the sole feeder
+    // into its Round 2 slot (the sibling feeder slot is empty/missing).
+    await autoSplitOvercrowdedMatches(loadedMatches)
 
     if (tournament?.season_id) {
       const { data: standings } = await supabase
@@ -253,6 +258,77 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     if (error) { setStatus('Error: ' + error.message); return }
     setStatus(`Imported ${newRows.length} entrants from season standings.`)
     load()
+  }
+
+  async function autoSplitOvercrowdedMatches(allMatches: TournamentMatchWithPlayers[]) {
+    // Group by division+bracket_kind.
+    const groups = new Map<string, TournamentMatchWithPlayers[]>()
+    for (const m of allMatches) {
+      const key = `${m.division ?? ''}|${m.bracket_kind}`
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(m)
+    }
+
+    let didSplit = false
+    for (const group of groups.values()) {
+      const minRound = Math.min(...group.map((m) => m.round))
+      const round1 = group.filter((m) => m.round === minRound)
+      const round2 = group.filter((m) => m.round === minRound + 1)
+
+      // Build a map of how many round-1 matches feed each round-2 slot via ceil(slot/2).
+      const feedersPerSlot = new Map<number, TournamentMatchWithPlayers[]>()
+      for (const r2 of round2) {
+        feedersPerSlot.set(r2.slot, round1.filter((r1) => Math.ceil(r1.slot / 2) === r2.slot))
+      }
+
+      for (const r2 of round2) {
+        const feeders = feedersPerSlot.get(r2.slot) ?? []
+        // Overcrowded: exactly ONE feeder but it has TWO real players.
+        if (feeders.length === 1) {
+          const feeder = feeders[0]
+          if (feeder.player_a_id && feeder.player_b_id) {
+            // Split: remove player_b from feeder, create new sibling match for player_b.
+            const usedSlots = new Set(group.map((m) => m.slot))
+            let newSlot = 1
+            while (usedSlots.has(newSlot)) newSlot++
+
+            await supabase.from('tournament_matches')
+              .update({ player_b_id: null, seed_b: null })
+              .eq('id', feeder.id)
+
+            await supabase.from('tournament_matches').insert({
+              tournament_id: feeder.tournament_id,
+              division: feeder.division,
+              bracket_kind: feeder.bracket_kind,
+              round: feeder.round,
+              slot: newSlot,
+              player_a_id: feeder.player_b_id,
+              player_b_id: null,
+              seed_a: feeder.seed_b,
+              seed_b: null,
+              score_a: null,
+              score_b: null,
+              winner_id: null,
+              is_medal_game: false,
+              label: null,
+              next_match_id: null,
+            })
+            didSplit = true
+          }
+        }
+      }
+    }
+
+    if (didSplit) {
+      // Re-fetch matches so the UI reflects the split.
+      const { data: fresh } = await supabase
+        .from('tournament_matches')
+        .select('*, player_a:players!player_a_id(id, display_name, chess_com_username), player_b:players!player_b_id(id, display_name, chess_com_username)')
+        .eq('tournament_id', id)
+        .order('round')
+        .order('slot')
+      setMatches((fresh ?? []) as unknown as TournamentMatchWithPlayers[])
+    }
   }
 
   async function dropPlayerIntoSlot(
