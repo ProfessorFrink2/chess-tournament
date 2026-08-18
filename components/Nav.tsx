@@ -61,6 +61,14 @@ export default function Nav() {
               </Link>
             </>
           )}
+          <a
+            href="https://github.com/ProfessorFrink2/chess-tournament/issues/new/choose"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-600 hover:text-gray-400 transition-colors text-xs"
+          >
+            Report an issue ↗
+          </a>
         </div>
       </div>
     </nav>
