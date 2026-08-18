@@ -31,7 +31,7 @@ async function getData(id: string) {
     .eq('id', id)
     .maybeSingle()
 
-  if (!tournament) return null
+  if (!tournament || (tournament as Tournament).is_hidden) return null
   const t = tournament as Tournament
 
   const playerCols = 'id, display_name, chess_com_username'

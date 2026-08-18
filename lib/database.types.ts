@@ -49,6 +49,7 @@ export interface Season {
   is_active: boolean
   is_finished: boolean
   is_historic: boolean
+  is_hidden: boolean
   created_at: string
 }
 
@@ -99,6 +100,7 @@ export interface Tournament {
   end_date: string | null
   is_active: boolean
   is_finished: boolean
+  is_hidden: boolean
   notes: string | null
   created_at: string
 }

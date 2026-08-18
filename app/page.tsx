@@ -19,6 +19,7 @@ async function getData(): Promise<{
     .from('seasons')
     .select('*')
     .eq('is_active', true)
+    .eq('is_hidden', false)
     .single()
 
   if (!season) return { season: null, players: [], matches: [] }

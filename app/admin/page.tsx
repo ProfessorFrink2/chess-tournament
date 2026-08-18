@@ -124,6 +124,20 @@ export default function AdminPage() {
     loadData()
   }
 
+  async function toggleSeasonHidden(id: string, current: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await supabase.from('seasons').update({ is_hidden: !current } as any).eq('id', id)
+    setStatus(current ? 'Season visible.' : 'Season hidden.')
+    loadData()
+  }
+
+  async function toggleTournamentHidden(id: string, current: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await supabase.from('tournaments').update({ is_hidden: !current } as any).eq('id', id)
+    setStatus(current ? 'Tournament visible.' : 'Tournament hidden.')
+    loadData()
+  }
+
   async function createTournament() {
     const number = parseInt(newTournament.number, 10)
     if (!Number.isFinite(number)) { setStatus('Tournament number is required'); return }
@@ -213,6 +227,9 @@ export default function AdminPage() {
                 ) : (
                   <button onClick={() => startSeason(s.id)} className="text-xs text-blue-400 hover:underline">Start</button>
                 )}
+                <button onClick={() => toggleSeasonHidden(s.id, !!(s as any).is_hidden)} className={`text-xs hover:underline ml-2 ${(s as any).is_hidden ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-500 hover:text-gray-300'}`}>
+                  {(s as any).is_hidden ? 'Hidden' : 'Hide'}
+                </button>
                 <button onClick={() => deleteSeason(s.id)} className="text-xs text-red-500 hover:text-red-400 hover:underline ml-2">Delete</button>
               </div>
             </div>
@@ -256,6 +273,9 @@ export default function AdminPage() {
                   <Link href={`/admin/tournaments/${t.id}`} className="text-xs text-blue-400 hover:underline">
                     Edit
                   </Link>
+                  <button onClick={() => toggleTournamentHidden(t.id, !!(t as any).is_hidden)} className={`text-xs hover:underline ${(t as any).is_hidden ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-500 hover:text-gray-300'}`}>
+                    {(t as any).is_hidden ? 'Hidden' : 'Hide'}
+                  </button>
                   <button onClick={() => deleteTournament(t.id)} className="text-xs text-red-500 hover:text-red-400 hover:underline">
                     Delete
                   </button>

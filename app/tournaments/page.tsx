@@ -18,8 +18,8 @@ async function getData() {
   const db = createReadClient()
 
   const [{ data: tournaments }, { data: seasons }, { data: podium }] = await Promise.all([
-    db.from('tournaments').select('*').order('number', { ascending: false }),
-    db.from('seasons').select('id, name, number'),
+    db.from('tournaments').select('*').eq('is_hidden', false).order('number', { ascending: false }),
+    db.from('seasons').select('id, name, number').eq('is_hidden', false),
     db
       .from('tournament_entrants')
       .select('tournament_id, division, final_placement, player:players(display_name)')

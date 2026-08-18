@@ -60,6 +60,7 @@ create table public.seasons (
   is_active boolean not null default false,
   is_finished boolean not null default false,
   is_historic boolean not null default false,
+  is_hidden boolean not null default false,
   created_at timestamptz not null default now()
 );
 create unique index seasons_number_key
@@ -150,6 +151,7 @@ create table public.tournaments (
   end_date date,
   is_active boolean not null default false,
   is_finished boolean not null default false,
+  is_hidden boolean not null default false,
   notes text,
   created_at timestamptz not null default now()
 );
