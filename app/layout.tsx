@@ -18,6 +18,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} bg-gray-950 text-gray-100 min-h-screen`}>
         <Nav />
         <main className="max-w-7xl mx-auto px-4 py-8">{children}</main>
+        <footer className="border-t border-gray-800 mt-12">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-end">
+            <a
+              href="https://github.com/ProfessorFrink2/chess-tournament/issues/new/choose"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Report an issue ↗
+            </a>
+          </div>
+        </footer>
         <Analytics />
         <SpeedInsights />
       </body>
