@@ -75,19 +75,26 @@ async function gamesInMonth(userA, userB, year, month) {
   )
 }
 
-/** Convert chess.com result strings to our DB enum or null. */
-function toResult(game, whiteUsername) {
-  const whiteLow = whiteUsername.toLowerCase()
-  const isWhite = game.white?.username?.toLowerCase() === whiteLow
+/** Convert chess.com result strings to our DB enum or null.
+ *  dbWhiteUser is the chess_com_username of our DB's white_player_id — chess.com
+ *  assigns colors independently, so we must check who actually won and map back. */
+function toResult(game, dbWhiteUser) {
   const wRes = game.white?.result
   const bRes = game.black?.result
   const DRAW_RESULTS = new Set(['agreed', 'stalemate', 'insufficient', 'timevsinsufficient', '50move', 'repetition', 'bughousecomp'])
   if (DRAW_RESULTS.has(wRes) || DRAW_RESULTS.has(bRes)) return 'draw'
-  if (wRes === 'win') return 'white_wins'
-  if (bRes === 'win') return 'black_wins'
-  if (wRes === 'checkmated' || wRes === 'timeout' || wRes === 'resigned' || wRes === 'abandoned') return 'black_wins'
-  if (bRes === 'checkmated' || bRes === 'timeout' || bRes === 'resigned' || bRes === 'abandoned') return 'white_wins'
-  return null // unknown
+
+  // Determine who won on chess.com by username
+  let winnerUser = null
+  if (wRes === 'win' || ['checkmated','timeout','resigned','abandoned'].includes(bRes)) {
+    winnerUser = game.white?.username?.toLowerCase()
+  } else if (bRes === 'win' || ['checkmated','timeout','resigned','abandoned'].includes(wRes)) {
+    winnerUser = game.black?.username?.toLowerCase()
+  }
+  if (!winnerUser) return null
+
+  // Map to DB result: did the DB white player win?
+  return winnerUser === dbWhiteUser.toLowerCase() ? 'white_wins' : 'black_wins'
 }
 
 function isoDate(unixSec) {

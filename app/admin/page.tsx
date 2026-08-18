@@ -82,7 +82,7 @@ export default function AdminPage() {
   async function createSeason() {
     if (!newSeason.name || !newSeason.start_date) { setStatus('Name and start date are required'); return }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: season, error } = await supabase.from('seasons').insert(newSeason as any).select().single()
+    const { data: season, error } = await supabase.from('seasons').insert({ ...newSeason, is_hidden: true } as any).select().single()
     if (error) { setStatus('Error: ' + error.message); return }
     setStatus('Season created! Generating schedule…')
     setNewSeason({ name: '', start_date: '' })
@@ -148,6 +148,7 @@ export default function AdminPage() {
       name: newTournament.name.trim(),
       format: newTournament.format,
       season_id: newTournament.season_id || null,
+      is_hidden: true,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any).select().single()
 
