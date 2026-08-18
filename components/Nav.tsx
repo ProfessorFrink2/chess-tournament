@@ -65,7 +65,7 @@ export default function Nav() {
             href="https://github.com/ProfessorFrink2/chess-tournament/issues/new/choose"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-600 hover:text-gray-400 transition-colors text-xs"
+            className="text-gray-400 hover:text-white transition-colors text-xs"
           >
             Report an issue ↗
           </a>
