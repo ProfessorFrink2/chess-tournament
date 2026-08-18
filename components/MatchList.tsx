@@ -114,7 +114,7 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
       {weeks.map((week) => (
         <div key={week}>
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-2">
-            Week {week}
+            {week === 0 ? 'Play by season end' : `Week ${week}`}
           </h3>
           <div className="space-y-2">
             {byWeek[week].map((m) => {

@@ -247,7 +247,7 @@ export default function PlayerPage() {
                         </a>}
                       </div>
                       <div className={`text-xs mt-0.5 ${dateColor}`}>
-                        Week {m.week_number} · {m.scheduled_start} – {m.scheduled_end}
+                        {m.week_number === 0 ? 'Play by season end' : `Week ${m.week_number}`}{m.week_number !== 0 && ` · ${m.scheduled_start} – ${m.scheduled_end}`}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
