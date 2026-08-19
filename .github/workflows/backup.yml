@@ -1,0 +1,36 @@
+name: Daily DB Backup
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # 6:17 AM UTC daily (~2am ET)
+  workflow_dispatch:         # allow manual trigger from GitHub Actions UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run backup
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/backup-db.mjs
+
+      - name: Commit backup files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          # Only commit if there are changes
+          git diff --cached --quiet || git commit -m "chore: daily DB backup $(date -u +%Y-%m-%d)"
+          git push
