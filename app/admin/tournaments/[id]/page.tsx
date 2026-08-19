@@ -198,22 +198,20 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
 
   async function removeEntrant(entrantId: string, division: string | null, bracketKind: string) {
     await supabase.from('tournament_entrants').delete().eq('id', entrantId)
+    // Compute new seeds outside the setter so we can await the DB updates
     setEntrants((prev) => {
       const remaining = prev.filter((e) => e.id !== entrantId)
-      // Re-number seeds for the affected division+bracket, preserving relative order
       const peers = remaining
         .filter((e) => e.division === division && e.bracket_kind === bracketKind && e.seed != null)
         .sort((a, b) => (a.seed ?? 0) - (b.seed ?? 0))
       const seedMap = new Map(peers.map((e, i) => [e.id, i + 1]))
-      const updated = remaining.map((e) =>
-        seedMap.has(e.id) ? { ...e, seed: seedMap.get(e.id)! } : e
+      // Kick off awaited DB updates as a side effect (outside React's render cycle)
+      Promise.all(
+        peers.map((e, i) =>
+          supabase.from('tournament_entrants').update({ seed: i + 1 }).eq('id', e.id)
+        )
       )
-      // Persist the re-numbered seeds to DB (fire-and-forget)
-      for (const e of updated) {
-        if (seedMap.has(e.id))
-          supabase.from('tournament_entrants').update({ seed: e.seed }).eq('id', e.id)
-      }
-      return updated
+      return remaining.map((e) => seedMap.has(e.id) ? { ...e, seed: seedMap.get(e.id)! } : e)
     })
   }
 
