@@ -25,6 +25,7 @@ export default function AdminPage() {
   const [newSeason, setNewSeason] = useState({ name: '', start_date: '' })
   const [status, setStatus] = useState('')
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set())
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; input: string } | null>(null)
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [newTournament, setNewTournament] = useState<{
     number: string
@@ -100,9 +101,9 @@ export default function AdminPage() {
   }
 
   async function deleteSeason(id: string) {
-    if (!confirm('Delete this season and all its matches? This cannot be undone.')) return
     const { error } = await supabase.from('seasons').delete().eq('id', id)
     if (error) { setStatus('Error: ' + error.message); return }
+    setDeleteConfirm(null)
     setStatus('Season deleted.')
     loadData()
   }
@@ -215,24 +216,51 @@ export default function AdminPage() {
         <h2 className="text-lg font-semibold mb-3">Seasons</h2>
         <div className="space-y-2 mb-4">
           {seasons.map((s) => (
-            <div key={s.id} className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm">
-              <span>{s.name} <span className="text-gray-500">(starts {s.start_date}{s.end_date ? ` – ${s.end_date}` : ''})</span></span>
-              <div className="flex items-center gap-2">
-                {(s as any).is_finished ? (
-                  <span className="text-gray-500 text-xs">Finished</span>
-                ) : s.is_active ? (
-                  <>
-                    <span className="text-green-400 text-xs">Active</span>
-                    <button onClick={() => finishSeason(s.id)} className="text-xs text-amber-500 hover:text-amber-400 hover:underline">Finish</button>
-                  </>
-                ) : (
-                  <button onClick={() => startSeason(s.id)} className="text-xs text-blue-400 hover:underline">Start</button>
-                )}
-                <button onClick={() => toggleSeasonHidden(s.id, !!(s as any).is_hidden)} className={`text-xs hover:underline ml-2 ${(s as any).is_hidden ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-500 hover:text-gray-300'}`}>
-                  {(s as any).is_hidden ? 'Hidden' : 'Hide'}
-                </button>
-                <button onClick={() => deleteSeason(s.id)} className="text-xs text-red-500 hover:text-red-400 hover:underline ml-2">Delete</button>
+            <div key={s.id} className="bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>{s.name} <span className="text-gray-500">(starts {s.start_date}{s.end_date ? ` – ${s.end_date}` : ''})</span></span>
+                <div className="flex items-center gap-2">
+                  {(s as any).is_finished ? (
+                    <span className="text-gray-500 text-xs">Finished</span>
+                  ) : s.is_active ? (
+                    <>
+                      <span className="text-green-400 text-xs">Active</span>
+                      <button onClick={() => finishSeason(s.id)} className="text-xs text-amber-500 hover:text-amber-400 hover:underline">Finish</button>
+                    </>
+                  ) : (
+                    <button onClick={() => startSeason(s.id)} className="text-xs text-blue-400 hover:underline">Start</button>
+                  )}
+                  <button onClick={() => toggleSeasonHidden(s.id, !!(s as any).is_hidden)} className={`text-xs hover:underline ml-2 ${(s as any).is_hidden ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-500 hover:text-gray-300'}`}>
+                    {(s as any).is_hidden ? 'Hidden' : 'Hide'}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(deleteConfirm?.id === s.id ? null : { id: s.id, name: s.name, input: '' })}
+                    className="text-xs text-red-500 hover:text-red-400 hover:underline ml-2"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+              {deleteConfirm?.id === s.id && (
+                <div className="mt-2 flex items-center gap-2 border-t border-gray-800 pt-2">
+                  <span className="text-xs text-gray-400">Type <span className="text-white font-mono">{s.name}</span> to confirm:</span>
+                  <input
+                    autoFocus
+                    value={deleteConfirm.input}
+                    onChange={(e) => setDeleteConfirm({ ...deleteConfirm, input: e.target.value })}
+                    className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-red-600"
+                    placeholder={s.name}
+                  />
+                  <button
+                    onClick={() => deleteSeason(s.id)}
+                    disabled={deleteConfirm.input !== s.name}
+                    className="text-xs px-3 py-1 rounded bg-red-700 text-white hover:bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Delete
+                  </button>
+                  <button onClick={() => setDeleteConfirm(null)} className="text-xs text-gray-500 hover:text-gray-300">Cancel</button>
+                </div>
+              )}
             </div>
           ))}
         </div>

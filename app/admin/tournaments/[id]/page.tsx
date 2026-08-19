@@ -458,24 +458,14 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     await autoSplitOvercrowdedMatches(freshMatches)
   }
 
-  async function resetBracketPlayers() {
-    // Re-assign players from entrant seeds without regenerating the bracket structure.
-    const divEntrants = entrants.filter(
-      (e) => e.division === activeDivision && e.bracket_kind === entrantBracketFor(activeKind)
-    )
-    const bySeed = new Map(divEntrants.map((e) => [e.seed, e.player_id]))
-    const updates = divisionMatches
-      .filter((m) => !m.is_medal_game)
-      .map((m) => ({
-        id: m.id,
-        player_a_id: m.seed_a != null ? (bySeed.get(m.seed_a) ?? null) : null,
-        player_b_id: m.seed_b != null ? (bySeed.get(m.seed_b) ?? null) : null,
-      }))
-    setStatus('Resetting…')
-    for (const u of updates) {
-      await updateMatch(u.id, { player_a_id: u.player_a_id, player_b_id: u.player_b_id })
+  async function editPlayers() {
+    if (!confirm('Delete the bracket and return to the player list? Scores will be lost.')) return
+    const matchIds = divisionMatches.map((m) => m.id)
+    if (matchIds.length > 0) {
+      await supabase.from('tournament_matches').delete().in('id', matchIds)
+      setMatches((prev) => prev.filter((m) => !matchIds.includes(m.id)))
     }
-    setStatus('Reset to seeded positions.')
+    setStatus('Bracket deleted. Edit players and regenerate.')
   }
 
   async function generateBracket() {
@@ -661,8 +651,8 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
         {/* Bracket is the primary UI — entrant rows are embedded as round-1 cards */}
         {divisionMatches.length > 0 && (
           <div className="flex gap-3 justify-end mb-1">
-            <button onClick={resetBracketPlayers} className="text-xs text-gray-600 hover:text-gray-400 underline">
-              Reset players
+            <button onClick={editPlayers} className="text-xs text-gray-600 hover:text-gray-400 underline">
+              Edit players
             </button>
             <button onClick={generateBracket} className="text-xs text-gray-600 hover:text-gray-400 underline">
               Regenerate bracket
