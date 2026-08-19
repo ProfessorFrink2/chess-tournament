@@ -636,7 +636,7 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
             {divisionMatches.length === 0 && (
               <button onClick={generateBracket}
                 className="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded hover:bg-gray-700">
-                Generate from seeds
+                Generate bracket from seeds
               </button>
             )}
           </div>
