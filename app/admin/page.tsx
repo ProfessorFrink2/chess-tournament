@@ -28,11 +28,10 @@ export default function AdminPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; input: string; kind: 'season' | 'tournament' } | null>(null)
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [newTournament, setNewTournament] = useState<{
-    number: string
     name: string
     format: TournamentFormat
     season_id: string
-  }>({ number: '', name: '', format: 'single_elim', season_id: '' })
+  }>({ name: '', format: 'single_elim', season_id: '' })
 
   useEffect(() => {
     checkAdmin()
@@ -140,9 +139,9 @@ export default function AdminPage() {
   }
 
   async function createTournament() {
-    const number = parseInt(newTournament.number, 10)
-    if (!Number.isFinite(number)) { setStatus('Tournament number is required'); return }
     if (!newTournament.name.trim()) { setStatus('Tournament name is required'); return }
+    const maxNumber = tournaments.reduce((max, t) => Math.max(max, t.number ?? 0), 0)
+    const number = maxNumber + 1
 
     const { data, error } = await supabase.from('tournaments').insert({
       number,
@@ -155,7 +154,7 @@ export default function AdminPage() {
 
     if (error) { setStatus('Error: ' + error.message); return }
     setStatus('Tournament created.')
-    setNewTournament({ number: '', name: '', format: 'single_elim', season_id: '' })
+    setNewTournament({ name: '', format: 'single_elim', season_id: '' })
     router.push(`/admin/tournaments/${(data as { id: string }).id}`)
   }
 
@@ -342,13 +341,6 @@ export default function AdminPage() {
 
         <div className="flex gap-2 flex-wrap">
           <input
-            placeholder="#"
-            inputMode="numeric"
-            value={newTournament.number}
-            onChange={(e) => setNewTournament({ ...newTournament, number: e.target.value })}
-            className="w-16 bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-white"
-          />
-          <input
             placeholder="Tournament name"
             value={newTournament.name}
             onChange={(e) => setNewTournament({ ...newTournament, name: e.target.value })}
@@ -369,7 +361,7 @@ export default function AdminPage() {
             className="bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-sm text-white"
           >
             <option value="">No season</option>
-            {seasons.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {[...seasons].reverse().map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
         <p className="text-xs text-gray-500 mt-1">
