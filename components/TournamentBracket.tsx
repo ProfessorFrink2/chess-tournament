@@ -227,10 +227,13 @@ function MatchCard({
   )
 }
 
-/** Three strategies for deriving bracket edges, in priority order:
- *  1. next_match_id FK
- *  2. winner_id tracing (historic data)
- *  3. Slot arithmetic — ceil(S/2) in round R+1 (fallback for TBD brackets)
+/** Two strategies for deriving bracket edges, in priority order:
+ *  1. next_match_id FK (set at import time, stable regardless of result edits)
+ *  2. Slot arithmetic — ceil(S/2) in round R+1 (fallback for TBD brackets)
+ *
+ *  Strategy 2 (winner_id tracing) was removed: once results are entered,
+ *  winner_id is set on some matches but not others, producing partial/shifting
+ *  edge sets that make the layout inconsistent after edits.
  */
 function deriveEdges(matches: TournamentMatchWithPlayers[]): Array<{ from: string; to: string }> {
   const edges: Array<{ from: string; to: string }> = []
@@ -242,25 +245,6 @@ function deriveEdges(matches: TournamentMatchWithPlayers[]): Array<{ from: strin
 
   for (const m of matches) {
     if (m.next_match_id) add(m.id, m.next_match_id)
-  }
-  if (edges.length > 0) return edges
-
-  const byRound = new Map<number, TournamentMatchWithPlayers[]>()
-  for (const m of matches) {
-    if (!byRound.has(m.round)) byRound.set(m.round, [])
-    byRound.get(m.round)!.push(m)
-  }
-  const rounds = [...byRound.keys()].sort((a, b) => a - b)
-  for (let i = 1; i < rounds.length; i++) {
-    for (const m of byRound.get(rounds[i])!) {
-      for (const playerId of [m.player_a_id, m.player_b_id]) {
-        if (!playerId) continue
-        let source: TournamentMatchWithPlayers | undefined
-        for (let j = i - 1; j >= 0 && !source; j--)
-          source = byRound.get(rounds[j])!.find((p) => p.winner_id === playerId)
-        if (source) add(source.id, m.id)
-      }
-    }
   }
   if (edges.length > 0) return edges
 
