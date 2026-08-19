@@ -203,7 +203,12 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-10">
-      <h1 className="text-2xl font-bold">Admin Panel</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <Link href="/admin/stats" className="text-sm text-amber-400 hover:text-amber-300 transition-colors">
+          View stats →
+        </Link>
+      </div>
       {status && (
         <div className="bg-gray-800 border border-gray-700 rounded px-4 py-2 text-sm text-amber-300">
           {status}
