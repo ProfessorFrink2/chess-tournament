@@ -27,6 +27,8 @@ interface TMatchRow {
 }
 
 interface ProfileRow {
+  id: string
+  email: string
   created_at: string
 }
 
@@ -49,14 +51,19 @@ function pct(n: number, d: number) {
   return d === 0 ? '—' : `${Math.round((n / d) * 100)}%`
 }
 
+function isRealSignup(email: string) {
+  return !email.endsWith('@chess.local')
+}
+
 function groupByMonth(profiles: ProfileRow[]) {
+  const real = profiles.filter((p) => isRealSignup(p.email))
   const now = new Date()
   const buckets: { label: string; value: number }[] = []
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const label = d.toLocaleString('default', { month: 'short', year: '2-digit' })
-    const count = profiles.filter((p) => p.created_at.startsWith(key)).length
+    const count = real.filter((p) => p.created_at.startsWith(key)).length
     buckets.push({ label, value: count })
   }
   return buckets
@@ -77,7 +84,7 @@ export default function StatsPage() {
         supabase.from('players').select('id, display_name, user_id, is_historic'),
         supabase.from('seasons').select('*').order('number', { ascending: true, nullsFirst: false }),
         supabase.from('tournament_matches').select('winner_id, player_a_id, player_b_id'),
-        supabase.from('profiles').select('created_at').order('created_at'),
+        supabase.from('profiles').select('id, email, created_at').order('created_at'),
       ])
 
       setMatches((m ?? []) as MatchRow[])
@@ -171,10 +178,23 @@ export default function StatsPage() {
   }).filter((x) => x.value > 0)
 
   // ── Player signup stats ───────────────────────────────────────────────────
+  // "Real signups" = profiles with a real email (not admin-seeded @chess.local placeholders),
+  // plus players who claimed their account via a real email (the claim flow).
+  const profileById = new Map<string, ProfileRow>(profiles.map((p) => [p.id, p]))
+  const realProfiles = profiles.filter((p) => isRealSignup(p.email))
+
   const totalPlayers = players.length
-  const claimed = players.filter((p) => p.user_id !== null).length
   const historic = players.filter((p) => p.is_historic).length
   const unclaimed = players.filter((p) => p.user_id === null && !p.is_historic).length
+
+  // Claimed via real email = player has a user_id pointing to a real (non-seeded) profile
+  const realSignupPlayers = players.filter((p) => {
+    if (!p.user_id) return false
+    const profile = profileById.get(p.user_id)
+    return profile ? isRealSignup(profile.email) : false
+  })
+
+  const realSignupCount = realProfiles.length
   const signupsByMonth = groupByMonth(profiles)
 
   // ── Tournament stats ──────────────────────────────────────────────────────
@@ -216,16 +236,16 @@ export default function StatsPage() {
       <section>
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Players & Signups</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-          <StatCard title="Total players" value={totalPlayers} />
-          <StatCard title="Claimed accounts" value={claimed} subtitle={`${pct(claimed, totalPlayers)} of all players`} />
-          <StatCard title="Historic only" value={historic} subtitle="No account, is_historic=true" />
-          <StatCard title="Unclaimed" value={unclaimed} subtitle="Modern player, no account yet" />
+          <StatCard title="Signed up" value={realSignupCount} subtitle="Real accounts (excl. seeded)" />
+          <StatCard title="Claimed players" value={realSignupPlayers.length} subtitle="Players linked to a real account" />
+          <StatCard title="Total players" value={totalPlayers} subtitle="Including seeded & historic" />
+          <StatCard title="Unclaimed" value={unclaimed} subtitle="Current player, no account yet" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <StatCard
             title="Signups (last 12 months)"
-            value={profiles.length}
-            subtitle="Registered accounts"
+            value={realSignupCount}
+            subtitle="Real accounts, excl. admin-seeded"
             bars={signupsByMonth}
           />
           <StatCard
