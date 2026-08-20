@@ -40,14 +40,12 @@ export default function Nav() {
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-gray-400 hover:text-white transition-colors">Brackets</Link>
           <Link href="/tournaments" className="text-gray-400 hover:text-white transition-colors">Tournaments</Link>
+          <Link href="/stats" className="text-gray-400 hover:text-white transition-colors">Stats</Link>
           {user && (
             <Link href="/player" className="text-gray-400 hover:text-white transition-colors">My Matches</Link>
           )}
           {user?.role === 'admin' && (
-            <>
-              <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin</Link>
-              <Link href="/admin/stats" className="text-amber-400 hover:text-amber-300 transition-colors">Stats</Link>
-            </>
+            <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin</Link>
           )}
           {user ? (
             <button

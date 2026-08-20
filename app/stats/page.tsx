@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import StatCard from '@/components/StatCard'
 import type { Season } from '@/lib/database.types'
@@ -64,7 +63,6 @@ function groupByMonth(profiles: ProfileRow[]) {
 }
 
 export default function StatsPage() {
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [matches, setMatches] = useState<MatchRow[]>([])
   const [players, setPlayers] = useState<PlayerRow[]>([])
@@ -74,11 +72,6 @@ export default function StatsPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.push('/'); return }
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
-      if ((profile as { role: string } | null)?.role !== 'admin') { router.push('/'); return }
-
       const [{ data: m }, { data: p }, { data: s }, { data: tm }, { data: pr }] = await Promise.all([
         supabase.from('matches').select('white_player_id, black_player_id, result, season_id, bracket'),
         supabase.from('players').select('id, display_name, user_id, is_historic'),
@@ -95,7 +88,7 @@ export default function StatsPage() {
       setLoading(false)
     }
     load()
-  }, [router])
+  }, [])
 
   if (loading) return <div className="p-8 text-gray-400">Loading…</div>
 
