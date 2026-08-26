@@ -1,14 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import BracketTable from '@/components/BracketTable'
 import MatchList from '@/components/MatchList'
-import type { Player, Season, MatchWithPlayers } from '@/lib/database.types'
+import type { Player, Season, MatchWithPlayersAndGame } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
 
 async function getData(): Promise<{
   season: Season | null
   players: Player[]
-  matches: MatchWithPlayers[]
+  matches: MatchWithPlayersAndGame[]
 }> {
   const db = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +31,8 @@ async function getData(): Promise<{
       .select(`
         *,
         white_player:players!white_player_id(id, display_name, chess_com_username),
-        black_player:players!black_player_id(id, display_name, chess_com_username)
+        black_player:players!black_player_id(id, display_name, chess_com_username),
+        games(id, rules, time_control, starred)
       `)
       .eq('season_id', (season as Season).id)
       .order('week_number')
@@ -41,7 +42,7 @@ async function getData(): Promise<{
   return {
     season: season as Season,
     players: (players ?? []) as Player[],
-    matches: (matches ?? []) as MatchWithPlayers[],
+    matches: (matches ?? []) as MatchWithPlayersAndGame[],
   }
 }
 

@@ -73,6 +73,12 @@ export interface MatchWithPlayers extends Match {
   black_player: Pick<Player, 'id' | 'display_name' | 'chess_com_username'>
 }
 
+/** A match with its (0 or 1) imported chess.com game -- carries format
+ *  (rules/time_control) and the starred flag for the schedule page. */
+export interface MatchWithPlayersAndGame extends MatchWithPlayers {
+  games: Pick<Game, 'id' | 'rules' | 'time_control' | 'starred'>[]
+}
+
 /** A player's row in a season's final league table. Stored rather than derived,
  *  because historic league data survives only in aggregate. */
 export interface SeasonStanding {
@@ -190,6 +196,7 @@ export interface Game {
   end_time: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stats: any
+  starred: boolean
   created_at: string
 }
 
@@ -380,8 +387,9 @@ export interface Database {
           end_time: string
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           stats: any
+          starred?: boolean
         }
-        Update: object
+        Update: { starred?: boolean }
       }
     }
   }

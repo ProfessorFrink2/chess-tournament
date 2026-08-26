@@ -44,6 +44,9 @@ export default function Nav() {
           {user && (
             <Link href="/player" className="text-gray-400 hover:text-white transition-colors">My Matches</Link>
           )}
+          {user && (
+            <Link href="/player/stats" className="text-gray-400 hover:text-white transition-colors">My Stats</Link>
+          )}
           {user?.role === 'admin' && (
             <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin</Link>
           )}

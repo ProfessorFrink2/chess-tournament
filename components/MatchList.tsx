@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { MatchWithPlayers as Match } from '@/lib/database.types'
+import { MatchWithPlayersAndGame as Match } from '@/lib/database.types'
 
 interface ChessComGame {
   url: string
@@ -30,14 +30,34 @@ function dateColor(m: Match): string {
   if (m.result !== 'pending') return 'text-gray-600'
   const today = new Date().toISOString().split('T')[0]
   if (m.scheduled_start <= today && m.scheduled_end >= today) return 'text-green-700'
-  if (m.scheduled_end < today) return 'text-red-800'
-  return 'text-gray-600'
+  if (today < m.scheduled_start) return 'text-gray-600'
+  // Grace period: stay green for a week past scheduled_end before turning red.
+  const graceEnd = new Date(m.scheduled_end)
+  graceEnd.setDate(graceEnd.getDate() + 7)
+  const graceEndStr = graceEnd.toISOString().split('T')[0]
+  return today <= graceEndStr ? 'text-green-700' : 'text-red-800'
+}
+
+/** "600+2" -> "10+2" for display (base seconds -> minutes, keep increment). */
+function formatTimeControl(tc: string | null): string | null {
+  if (!tc) return null
+  const m = tc.match(/^(\d+)(?:\+(\d+))?$/)
+  if (!m) return tc
+  const minutes = Math.round(Number(m[1]) / 60)
+  return m[2] ? `${minutes}+${m[2]}` : `${minutes} min`
+}
+
+function formatBadge(game: Match['games'][number] | null): string | null {
+  if (!game) return null
+  if (game.rules === 'chess960') return '960'
+  return formatTimeControl(game.time_control)
 }
 
 export default function MatchList({ matches: initialMatches }: { matches: Match[] }) {
   const [matches, setMatches] = useState(initialMatches)
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null)
   const [myChessUsername, setMyChessUsername] = useState<string | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [chessGames, setChessGames] = useState<ChessComGame[]>([])
   const [reporting, setReporting] = useState<string | null>(null)
   const [gameUrl, setGameUrl] = useState('')
@@ -47,6 +67,7 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) return
+      setAccessToken(session.access_token)
       const { data } = await supabase
         .from('players')
         .select('id, chess_com_username')
@@ -101,6 +122,20 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
     setMatches(prev => prev.map(m => m.id === matchId ? { ...m, result: data.result, chess_com_game_url: manualResult ? null : gameUrl.trim() } : m))
   }
 
+  async function toggleStar(matchId: string) {
+    if (!accessToken) return
+    const res = await fetch('/api/matches/star', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ matchId }),
+    })
+    const data = await res.json()
+    if (!res.ok) return
+    setMatches(prev => prev.map(m =>
+      m.id === matchId ? { ...m, games: m.games.map(g => ({ ...g, starred: data.starred })) } : m
+    ))
+  }
+
   const byWeek = matches.reduce<Record<number, Match[]>>((acc, m) => {
     if (!acc[m.week_number]) acc[m.week_number] = []
     acc[m.week_number].push(m)
@@ -113,8 +148,15 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
     <div className="space-y-6">
       {weeks.map((week) => (
         <div key={week}>
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-2">
+          <h3 id={`week-${week}`} className="scroll-mt-4 text-sm font-semibold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
             {week === 0 ? 'Play by season end' : `Week ${week}`}
+            <a
+              href={`#week-${week}`}
+              className="text-gray-600 hover:text-gray-300 normal-case tracking-normal font-normal"
+              title="Link to this week"
+            >
+              #
+            </a>
           </h3>
           <div className="space-y-2">
             {byWeek[week].map((m) => {
@@ -126,17 +168,34 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                 : null
               const foundGames = (isPending && oppUsername) ? foundGamesVs(oppUsername) : []
               const hasFound = foundGames.length > 0
+              const game = m.games?.[0] ?? null
+              const badge = formatBadge(game)
 
               return (
                 <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                     <div className="flex items-center gap-3 text-sm min-w-0">
                       <span className="text-xs text-gray-600 shrink-0">{m.bracket}</span>
+                      {badge && (
+                        <span className="text-[10px] text-gray-400 border border-gray-700 rounded px-1 py-0.5 shrink-0">
+                          {badge}
+                        </span>
+                      )}
                       <span className="truncate">{m.white_player.display_name}</span>
                       <span className="text-gray-600 shrink-0">vs</span>
                       <span className="truncate">{m.black_player.display_name}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
+                      {game && (
+                        <button
+                          onClick={() => isMyMatch && toggleStar(m.id)}
+                          disabled={!isMyMatch}
+                          title={isMyMatch ? (game.starred ? 'Unstar this game' : 'Star this game') : 'Especially good game'}
+                          className={`text-lg leading-none ${game.starred ? 'text-amber-400' : 'text-gray-700'} ${isMyMatch ? 'hover:text-amber-300 cursor-pointer' : 'cursor-default'}`}
+                        >
+                          {game.starred ? '★' : '☆'}
+                        </button>
+                      )}
                       <div className="text-sm text-right">
                         {m.chess_com_game_url ? (
                           <a
