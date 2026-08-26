@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { MatchResult } from '@/lib/database.types'
 import { getMonthlyGames, deriveResult } from '@/lib/chess-com'
+import { upsertGameFromChessCom } from '@/lib/games'
 
 const CHESS_COM_GAME_RE = /^https:\/\/www\.chess\.com\/game\/live\/(\d+)/i
 
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
   const { data: match } = await db
     .from('matches')
     .select(`
+      white_player_id, black_player_id,
       white_player:players!white_player_id(chess_com_username),
       black_player:players!black_player_id(chess_com_username)
     `)
@@ -105,6 +107,18 @@ export async function POST(req: NextRequest) {
   } as any).eq('id', matchId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  try {
+    await upsertGameFromChessCom(db, {
+      matchId,
+      whitePlayerId: m.white_player_id,
+      blackPlayerId: m.black_player_id,
+      result,
+      chessGame: foundGame,
+    })
+  } catch (err) {
+    console.error('Failed to import game for match', matchId, err)
+  }
 
   return NextResponse.json({ ok: true, result })
 }

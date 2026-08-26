@@ -183,6 +183,11 @@ export default function PlayerPage() {
           >
             @{player.chess_com_username} ↗
           </a>}
+          <div>
+            <Link href="/player/stats" className="text-sm text-blue-400 hover:underline">
+              My Stats →
+            </Link>
+          </div>
         </div>
         <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${
           player.bracket === 'A'

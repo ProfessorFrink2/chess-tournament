@@ -171,6 +171,28 @@ export interface SeasonStandingWithPlayer extends SeasonStanding {
   player: EntrantPlayer
 }
 
+/** A single chess.com game imported for a league match or a tournament match
+ *  game. Exactly one of match_id/tournament_match_id is set. `stats` holds the
+ *  shape produced by lib/pgn.ts's parseGameStats(). */
+export interface Game {
+  id: string
+  match_id: string | null
+  tournament_match_id: string | null
+  white_player_id: string
+  black_player_id: string
+  chess_com_url: string
+  pgn: string
+  result: MatchResult
+  time_control: string | null
+  rules: string | null
+  time_class: string | null
+  ply_count: number
+  end_time: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stats: any
+  created_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -340,6 +362,26 @@ export interface Database {
           label?: string | null
           next_match_id?: string | null
         }
+      }
+      games: {
+        Row: Game
+        Insert: {
+          match_id?: string | null
+          tournament_match_id?: string | null
+          white_player_id: string
+          black_player_id: string
+          chess_com_url: string
+          pgn: string
+          result: MatchResult
+          time_control?: string | null
+          rules?: string | null
+          time_class?: string | null
+          ply_count: number
+          end_time: string
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          stats: any
+        }
+        Update: object
       }
     }
   }

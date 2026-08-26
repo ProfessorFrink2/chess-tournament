@@ -43,6 +43,8 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
   const [seasonMatchPlayers, setSeasonMatchPlayers] = useState<Player[]>([])
   // Raw season match rows for computing W/D/L stats
   const [seasonMatchRows, setSeasonMatchRows] = useState<{ white_player_id: string | null; black_player_id: string | null; result: string; bracket: string }[]>([])
+  const [gameUrlInputs, setGameUrlInputs] = useState<Record<string, string>>({})
+  const [reportingGameFor, setReportingGameFor] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -481,6 +483,25 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
     load()
   }
 
+  async function reportTournamentGame(matchId: string) {
+    const gameUrl = (gameUrlInputs[matchId] ?? '').trim()
+    if (!gameUrl) return
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setStatus('Session expired — sign in again'); return }
+    setReportingGameFor(matchId)
+    const res = await fetch('/api/tournament-matches/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ tournamentMatchId: matchId, gameUrl }),
+    })
+    const data = await res.json()
+    setReportingGameFor(null)
+    if (!res.ok) { setStatus('Error: ' + (data.error ?? res.statusText)); return }
+    setGameUrlInputs((prev) => ({ ...prev, [matchId]: '' }))
+    setMatches((prev) => prev.map((m) => m.id === matchId ? { ...m, score_a: data.scoreA, score_b: data.scoreB } : m))
+    setStatus(`Recorded game (${data.result}) — score now ${data.scoreA}–${data.scoreB}.`)
+  }
+
   async function updateMatch(
     matchId: string,
     patch: Partial<Pick<TournamentMatchWithPlayers, 'score_a' | 'score_b' | 'winner_id' | 'player_a_id' | 'player_b_id' | 'seed_a' | 'seed_b'>>
@@ -722,6 +743,24 @@ export default function AdminTournamentPage({ params }: { params: Promise<{ id: 
                   {m.player_a_id && <option value={m.player_a_id}>{m.player_a?.display_name}</option>}
                   {m.player_b_id && <option value={m.player_b_id}>{m.player_b?.display_name}</option>}
                 </select>
+                {m.player_a_id && m.player_b_id && (
+                  <div className="flex items-center gap-1 w-full mt-1">
+                    <input
+                      type="text"
+                      placeholder="Paste chess.com game URL to record a game"
+                      value={gameUrlInputs[m.id] ?? ''}
+                      onChange={(e) => setGameUrlInputs((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                      className="flex-1 min-w-48 bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-xs"
+                    />
+                    <button
+                      onClick={() => reportTournamentGame(m.id)}
+                      disabled={reportingGameFor === m.id || !gameUrlInputs[m.id]}
+                      className="text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded px-2 py-0.5"
+                    >
+                      {reportingGameFor === m.id ? 'Recording…' : 'Record game'}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

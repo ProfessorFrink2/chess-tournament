@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { getMonthlyGames, findMatchGame, deriveResult } from '@/lib/chess-com'
+import { upsertGameFromChessCom } from '@/lib/games'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -61,6 +62,17 @@ export async function GET(req: NextRequest) {
       const result = deriveResult(game, whiteUsername)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await db.from('matches').update({ result, chess_com_game_url: game.url, last_checked_at: new Date().toISOString() } as any).eq('id', m.id)
+      try {
+        await upsertGameFromChessCom(db, {
+          matchId: m.id,
+          whitePlayerId: m.white_player_id,
+          blackPlayerId: m.black_player_id,
+          result,
+          chessGame: game,
+        })
+      } catch (err) {
+        console.error('Failed to import game for match', m.id, err)
+      }
       updated++
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

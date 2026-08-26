@@ -4,6 +4,9 @@ export interface ChessComGame {
   url: string
   pgn: string
   end_time: number
+  time_class: string
+  time_control: string
+  rules: string
   white: { username: string; result: string }
   black: { username: string; result: string }
 }
