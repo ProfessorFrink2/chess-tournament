@@ -177,16 +177,11 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
             {week === 0 ? 'Play by season end' : `Week ${week}`}
             <a
               href={`#week-${week}`}
-              className="text-gray-600 hover:text-gray-300 normal-case tracking-normal font-normal"
+              className="text-gray-600 hover:text-gray-300 normal-case tracking-normal font-normal flex items-center gap-1.5"
               title="Link to this week"
             >
-              #
+              #{week !== 0 && weekRange(byWeek[week])}
             </a>
-            {week !== 0 && (
-              <span className="text-gray-600 normal-case tracking-normal font-normal">
-                {weekRange(byWeek[week])}
-              </span>
-            )}
           </h3>
           <div className="space-y-2">
             {byWeek[week].map((m) => {
