@@ -74,9 +74,10 @@ export interface MatchWithPlayers extends Match {
 }
 
 /** A match with its (0 or 1) imported chess.com game -- carries format
- *  (rules/time_control) and the starred flag for the schedule page. */
+ *  (rules/time_control) and the list of players who've starred it, for the
+ *  schedule page's format badge and star count. */
 export interface MatchWithPlayersAndGame extends MatchWithPlayers {
-  games: Pick<Game, 'id' | 'rules' | 'time_control' | 'starred'>[]
+  games: (Pick<Game, 'id' | 'rules' | 'time_control'> & { game_stars: Pick<GameStar, 'player_id'>[] })[]
 }
 
 /** A player's row in a season's final league table. Stored rather than derived,
@@ -196,7 +197,15 @@ export interface Game {
   end_time: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stats: any
-  starred: boolean
+  created_at: string
+}
+
+/** One player's star vote on a game. Any player may star any game -- the
+ *  count is just the number of these rows for that game_id. */
+export interface GameStar {
+  id: string
+  game_id: string
+  player_id: string
   created_at: string
 }
 
@@ -387,9 +396,13 @@ export interface Database {
           end_time: string
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           stats: any
-          starred?: boolean
         }
-        Update: { starred?: boolean }
+        Update: object
+      }
+      game_stars: {
+        Row: GameStar
+        Insert: { game_id: string; player_id: string }
+        Update: object
       }
     }
   }

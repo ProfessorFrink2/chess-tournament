@@ -32,7 +32,7 @@ async function getData(): Promise<{
         *,
         white_player:players!white_player_id(id, display_name, chess_com_username),
         black_player:players!black_player_id(id, display_name, chess_com_username),
-        games(id, rules, time_control, starred)
+        games(id, rules, time_control, game_stars(player_id))
       `)
       .eq('season_id', (season as Season).id)
       .order('week_number')

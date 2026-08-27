@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 
-/** Toggles the "starred" flag on a match's imported game. Only the two
- *  players in that match may star it -- resolved server-side from the
- *  bearer token, same pattern as /api/player-stats, rather than trusting a
- *  client-supplied player id. */
+/** Toggles the caller's own star vote on a match's imported game. Any
+ *  registered player may star any game -- the player id is resolved
+ *  server-side from the bearer token, same pattern as /api/player-stats,
+ *  rather than trusting a client-supplied player id. */
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.replace(/^Bearer /i, '')
   if (!token) {
@@ -31,35 +31,41 @@ export async function POST(req: NextRequest) {
   if (!player) {
     return NextResponse.json({ error: 'No player record for this account' }, { status: 404 })
   }
-
-  const { data: match } = await db
-    .from('matches')
-    .select('white_player_id, black_player_id')
-    .eq('id', matchId)
-    .maybeSingle()
-
-  if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
-
-  const m = match as { white_player_id: string; black_player_id: string }
   const playerId = (player as { id: string }).id
-  if (m.white_player_id !== playerId && m.black_player_id !== playerId) {
-    return NextResponse.json({ error: 'Only players in this match can star it' }, { status: 403 })
-  }
 
   const { data: game } = await db
     .from('games')
-    .select('id, starred')
+    .select('id')
     .eq('match_id', matchId)
     .maybeSingle()
 
   if (!game) {
     return NextResponse.json({ error: 'No recorded game to star yet' }, { status: 404 })
   }
+  const gameId = (game as { id: string }).id
 
-  const g = game as { id: string; starred: boolean }
-  const starred = !g.starred
-  const { error } = await db.from('games').update({ starred }).eq('id', g.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { data: existing } = await db
+    .from('game_stars')
+    .select('id')
+    .eq('game_id', gameId)
+    .eq('player_id', playerId)
+    .maybeSingle()
 
-  return NextResponse.json({ ok: true, starred })
+  let starred: boolean
+  if (existing) {
+    const { error } = await db.from('game_stars').delete().eq('id', (existing as { id: string }).id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    starred = false
+  } else {
+    const { error } = await db.from('game_stars').insert({ game_id: gameId, player_id: playerId })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    starred = true
+  }
+
+  const { count } = await db
+    .from('game_stars')
+    .select('id', { count: 'exact', head: true })
+    .eq('game_id', gameId)
+
+  return NextResponse.json({ ok: true, starred, count: count ?? 0 })
 }

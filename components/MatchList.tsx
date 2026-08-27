@@ -123,7 +123,7 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
   }
 
   async function toggleStar(matchId: string) {
-    if (!accessToken) return
+    if (!accessToken || !myPlayerId) return
     const res = await fetch('/api/matches/star', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${accessToken}` },
@@ -132,7 +132,15 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
     const data = await res.json()
     if (!res.ok) return
     setMatches(prev => prev.map(m =>
-      m.id === matchId ? { ...m, games: m.games.map(g => ({ ...g, starred: data.starred })) } : m
+      m.id === matchId ? {
+        ...m,
+        games: m.games.map(g => ({
+          ...g,
+          game_stars: data.starred
+            ? [...g.game_stars, { player_id: myPlayerId }]
+            : g.game_stars.filter(s => s.player_id !== myPlayerId),
+        })),
+      } : m
     ))
   }
 
@@ -186,16 +194,21 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                       <span className="truncate">{m.black_player.display_name}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      {game && (
-                        <button
-                          onClick={() => isMyMatch && toggleStar(m.id)}
-                          disabled={!isMyMatch}
-                          title={isMyMatch ? (game.starred ? 'Unstar this game' : 'Star this game') : 'Especially good game'}
-                          className={`text-lg leading-none ${game.starred ? 'text-amber-400' : 'text-gray-700'} ${isMyMatch ? 'hover:text-amber-300 cursor-pointer' : 'cursor-default'}`}
-                        >
-                          {game.starred ? '★' : '☆'}
-                        </button>
-                      )}
+                      {game && (() => {
+                        const starCount = game.game_stars.length
+                        const iStarred = !!myPlayerId && game.game_stars.some(s => s.player_id === myPlayerId)
+                        return (
+                          <button
+                            onClick={() => myPlayerId && toggleStar(m.id)}
+                            disabled={!myPlayerId}
+                            title={myPlayerId ? (iStarred ? 'Unstar this game' : 'Star this game') : 'Especially good game'}
+                            className={`flex items-center gap-1 text-sm leading-none ${iStarred ? 'text-amber-400' : 'text-gray-600'} ${myPlayerId ? 'hover:text-amber-300 cursor-pointer' : 'cursor-default'}`}
+                          >
+                            <span className="text-lg">{iStarred ? '★' : '☆'}</span>
+                            {starCount > 0 && <span className="text-xs">{starCount}</span>}
+                          </button>
+                        )
+                      })()}
                       <div className="text-sm text-right">
                         {m.chess_com_game_url ? (
                           <a
