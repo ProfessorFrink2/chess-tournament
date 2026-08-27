@@ -53,6 +53,23 @@ function formatBadge(game: Match['games'][number] | null): string | null {
   return formatTimeControl(game.time_control)
 }
 
+/** Sunday on or before the given ISO date. */
+function sundayOnOrBefore(dateStr: string): Date {
+  const d = new Date(`${dateStr}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay())
+  return d
+}
+
+/** Sunday-to-Sunday range (8 days) covering a week's matches, using the
+ *  earliest scheduled_start among them as the anchor. */
+function weekRange(matches: Match[]): string {
+  const earliest = matches.reduce((min, m) => m.scheduled_start < min ? m.scheduled_start : min, matches[0].scheduled_start)
+  const start = sundayOnOrBefore(earliest)
+  const end = new Date(start)
+  end.setUTCDate(end.getUTCDate() + 7)
+  return `${start.toISOString().split('T')[0]} – ${end.toISOString().split('T')[0]}`
+}
+
 export default function MatchList({ matches: initialMatches }: { matches: Match[] }) {
   const [matches, setMatches] = useState(initialMatches)
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null)
@@ -165,6 +182,11 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
             >
               #
             </a>
+            {week !== 0 && (
+              <span className="text-gray-600 normal-case tracking-normal font-normal">
+                {weekRange(byWeek[week])}
+              </span>
+            )}
           </h3>
           <div className="space-y-2">
             {byWeek[week].map((m) => {
@@ -223,7 +245,7 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                           <span className={resultColor[m.result]}>{resultLabel(m)}</span>
                         )}
                         <div className={`text-xs mt-0.5 ${dateColor(m)}`}>
-                          {m.scheduled_start} – {m.scheduled_end}
+                          {m.scheduled_start}
                         </div>
                       </div>
                       {isMyMatch && !isPending && (
