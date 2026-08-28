@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { createReadClient, FORMAT_LABELS, MEDALS, divisionLabel } from '@/lib/tournaments'
+import { createReadClient, FORMAT_LABELS, podiumIcon, divisionLabel } from '@/lib/tournaments'
 import type { Tournament, Season } from '@/lib/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -107,11 +107,14 @@ export default async function TournamentsPage() {
                           </span>
                         )}
                         <span className="flex gap-3 flex-wrap">
-                          {rows.map((r) => (
-                            <span key={r.final_placement} className="text-gray-300">
-                              {MEDALS[r.final_placement - 1]} {r.player?.display_name ?? '—'}
-                            </span>
-                          ))}
+                          {rows.map((r) => {
+                            const { icon, className } = podiumIcon(division, r.final_placement)
+                            return (
+                              <span key={r.final_placement} className="text-gray-300">
+                                <span className={className}>{icon}</span> {r.player?.display_name ?? '—'}
+                              </span>
+                            )
+                          })}
                         </span>
                       </div>
                     ))}

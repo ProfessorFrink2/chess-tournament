@@ -6,7 +6,7 @@ import {
   createReadClient,
   FORMAT_LABELS,
   BRACKET_KIND_LABELS,
-  MEDALS,
+  podiumIcon,
   divisionLabel,
   entrantBracketFor,
 } from '@/lib/tournaments'
@@ -236,15 +236,18 @@ export default async function TournamentPage({
             )}
           </h2>
           <div className="flex gap-3 flex-wrap">
-            {podium.map((e) => (
-              <div
-                key={e.id}
-                className="bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm"
-              >
-                <span className="mr-2">{MEDALS[(e.final_placement ?? 1) - 1]}</span>
-                <span className="font-medium">{e.player?.display_name ?? '—'}</span>
-              </div>
-            ))}
+            {podium.map((e) => {
+              const { icon, className } = podiumIcon(activeDivision, e.final_placement ?? 1)
+              return (
+                <div
+                  key={e.id}
+                  className="bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm"
+                >
+                  <span className={`mr-2 ${className}`}>{icon}</span>
+                  <span className="font-medium">{e.player?.display_name ?? '—'}</span>
+                </div>
+              )
+            })}
           </div>
         </section>
       )}

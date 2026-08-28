@@ -10,6 +10,20 @@ export function createReadClient() {
 
 export const MEDALS = ['🥇', '🥈', '🥉'] as const
 
+/** A-division podiums get a trophy, tinted gold/silver/bronze by placement,
+ *  instead of the medal emoji every other division uses. */
+export const TROPHY_COLORS = ['text-yellow-400', 'text-slate-300', 'text-amber-700'] as const
+
+/** Podium icon for a given division + placement (1-3). A division gets a
+ *  colored trophy; every other division (B, C, D, Championship, historic
+ *  city/qualified names) keeps the plain medal. */
+export function podiumIcon(division: string | null, placement: number): { icon: string; className: string } {
+  if (division != null && /^A\b/.test(division)) {
+    return { icon: '🏆', className: TROPHY_COLORS[placement - 1] ?? '' }
+  }
+  return { icon: MEDALS[placement - 1], className: '' }
+}
+
 export const FORMAT_LABELS: Record<string, string> = {
   single_elim: 'Single elimination',
   double_elim: 'Double elimination',
