@@ -361,7 +361,10 @@ async function backfillLeagueMatches() {
       const idMatch = m.chess_com_game_url.match(/\/live\/(\d+)/)
       if (idMatch) {
         const end = new Date(m.scheduled_end)
-        for (let offset = 0; offset <= 2 && !game; offset++) {
+        // Search both backward and forward from the scheduled month — makeup/late
+        // games can be played well after the original scheduled window, so a
+        // known game URL may only turn up in a later month's archive.
+        for (let offset = -3; offset <= 2 && !game; offset++) {
           const d = new Date(end.getFullYear(), end.getMonth() - offset, 1)
           const games = await getMonthlyGames(whiteUsername, d.getFullYear(), d.getMonth() + 1)
           game = games.find((g) => g.url.includes(idMatch[1])) ?? null
