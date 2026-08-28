@@ -237,13 +237,13 @@ export default async function TournamentPage({
           </h2>
           <div className="flex gap-3 flex-wrap">
             {podium.map((e) => {
-              const { icon, className } = podiumIcon(activeDivision, e.final_placement ?? 1)
+              const { icon, filter } = podiumIcon(activeDivision, e.final_placement ?? 1)
               return (
                 <div
                   key={e.id}
                   className="bg-gray-900 border border-gray-800 rounded px-4 py-2 text-sm"
                 >
-                  <span className={`mr-2 ${className}`}>{icon}</span>
+                  <span className="mr-2" style={filter ? { filter } : undefined}>{icon}</span>
                   <span className="font-medium">{e.player?.display_name ?? '—'}</span>
                 </div>
               )

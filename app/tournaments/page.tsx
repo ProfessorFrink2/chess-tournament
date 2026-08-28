@@ -108,10 +108,10 @@ export default async function TournamentsPage() {
                         )}
                         <span className="flex gap-3 flex-wrap">
                           {rows.map((r) => {
-                            const { icon, className } = podiumIcon(division, r.final_placement)
+                            const { icon, filter } = podiumIcon(division, r.final_placement)
                             return (
                               <span key={r.final_placement} className="text-gray-300">
-                                <span className={className}>{icon}</span> {r.player?.display_name ?? '—'}
+                                <span style={filter ? { filter } : undefined}>{icon}</span> {r.player?.display_name ?? '—'}
                               </span>
                             )
                           })}

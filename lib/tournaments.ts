@@ -11,17 +11,25 @@ export function createReadClient() {
 export const MEDALS = ['🥇', '🥈', '🥉'] as const
 
 /** A-division podiums get a trophy, tinted gold/silver/bronze by placement,
- *  instead of the medal emoji every other division uses. */
-export const TROPHY_COLORS = ['text-yellow-400', 'text-slate-300', 'text-amber-700'] as const
+ *  instead of the medal emoji every other division uses. The trophy emoji
+ *  renders as a fixed-color glyph, so `text-*` classes have no effect --
+ *  these are CSS filters applied via inline style instead, strong enough to
+ *  actually shift its color (grayscale for silver, sepia+hue-rotate for a
+ *  copper bronze). */
+export const TROPHY_FILTERS = [
+  'saturate(1.4) brightness(1.05)',
+  'grayscale(1) brightness(1.4)',
+  'sepia(1) saturate(4) hue-rotate(320deg) brightness(0.9)',
+] as const
 
 /** Podium icon for a given division + placement (1-3). A division gets a
  *  colored trophy; every other division (B, C, D, Championship, historic
  *  city/qualified names) keeps the plain medal. */
-export function podiumIcon(division: string | null, placement: number): { icon: string; className: string } {
+export function podiumIcon(division: string | null, placement: number): { icon: string; filter?: string } {
   if (division != null && /^A\b/.test(division)) {
-    return { icon: '🏆', className: TROPHY_COLORS[placement - 1] ?? '' }
+    return { icon: '🏆', filter: TROPHY_FILTERS[placement - 1] }
   }
-  return { icon: MEDALS[placement - 1], className: '' }
+  return { icon: MEDALS[placement - 1] }
 }
 
 export const FORMAT_LABELS: Record<string, string> = {
