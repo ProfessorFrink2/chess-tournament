@@ -1,48 +1,60 @@
+/** One-time backfill: recompute `games.stats` for every existing row so it
+ *  picks up the new `avgMoveTimeSeconds` field added to ColorStats in
+ *  lib/pgn.ts. Re-derives everything from the `pgn` already stored in
+ *  Postgres -- no chess.com API calls needed.
+ *
+ *  Idempotent: pure recomputation + overwrite, safe to re-run.
+ *
+ *  Usage:
+ *    node scripts/backfill-move-times.mjs --dry-run   # report only, write nothing
+ *    node scripts/backfill-move-times.mjs
+ *
+ *  Note: this file duplicates lib/pgn.ts's parseGameStats() in plain JS,
+ *  same convention as scripts/backfill-games.mjs, because scripts/ has no
+ *  TypeScript loader configured. Keep the two in sync if parsing changes.
+ */
+import { createClient } from '@supabase/supabase-js'
 import { Chess } from 'chess.js'
+import { existsSync, readFileSync } from 'node:fs'
 
-/** Games ending in checkmate/resignation/etc. within this many plies (5 full
- *  moves) count as a "Scholar's Mate"-style quick decisive game. */
-export const SCHOLARS_MATE_MAX_PLIES = 10
+function loadEnv(path = '.env.local') {
+  if (!existsSync(path)) return
+  for (const raw of readFileSync(path, 'utf8').split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const eq = line.indexOf('=')
+    if (eq === -1) continue
+    const key = line.slice(0, eq).trim()
+    let value = line.slice(eq + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (!(key in process.env)) process.env[key] = value
+  }
+}
+loadEnv()
 
-/** Number of consecutive own-moves in the "Bullet Train" fastest-sequence stat. */
+const DRY = process.argv.includes('--dry-run')
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
+  process.exit(1)
+}
+const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } })
+
+// ---------------------------------------------------------------------------
+// PGN parsing (mirrors lib/pgn.ts)
+// ---------------------------------------------------------------------------
+
+const SCHOLARS_MATE_MAX_PLIES = 10
 const BULLET_TRAIN_WINDOW = 5
 
-export type Color = 'w' | 'b'
-
-export interface TimedMove {
-  ply: number
-  san: string
-  timeSpentSeconds: number | null
-}
-
-export interface ColorStats {
-  captures: number
-  checks: number
-  kingWalkSquares: number
-  /** Shortest cumulative clock usage across BULLET_TRAIN_WINDOW consecutive
-   *  own moves. Null if the player made fewer than that many moves, or clock
-   *  data is unavailable. */
-  bulletTrainSeconds: number | null
-  bulletTrainStartPly: number | null
-  /** Longest single move think time. */
-  brainFreezeSeconds: number | null
-  brainFreezePly: number | null
-  brainFreezeSan: string | null
-  /** Mean per-move think time across this game, this color only. Null if no
-   *  moves had clock data. */
-  avgMoveTimeSeconds: number | null
-}
-
-export interface ParsedGameStats {
-  plyCount: number
-  durationSeconds: number | null
-  firstCaptureColor: Color | null
-  isScholarsMate: boolean
-  white: ColorStats
-  black: ColorStats
-}
-
-function parseClockToSeconds(raw: string): number | null {
+function parseClockToSeconds(raw) {
   const parts = raw.trim().split(':').map(Number)
   if (parts.some((n) => Number.isNaN(n))) return null
   if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
@@ -50,65 +62,35 @@ function parseClockToSeconds(raw: string): number | null {
   return null
 }
 
-/** "600+2" -> { base: 600, increment: 2 }. "600" -> { base: 600, increment: 0 }.
- *  Correspondence controls like "1/259200" aren't a base+increment shape --
- *  returns nulls so downstream clock-usage math is skipped for those games. */
-function parseTimeControl(tc: string | undefined | null): { base: number | null; increment: number } {
+function parseTimeControl(tc) {
   if (!tc) return { base: null, increment: 0 }
   const m = tc.match(/^(\d+)(?:\+(\d+))?$/)
   if (!m) return { base: null, increment: 0 }
   return { base: Number(m[1]), increment: m[2] ? Number(m[2]) : 0 }
 }
 
-/** Reads PGN headers directly with a regex rather than via chess.js, so
- *  headers are still available even for games chess.js can't load (see
- *  parseGameStats' fallback path below). */
-function parseHeadersRaw(pgn: string): Record<string, string> {
-  const headers: Record<string, string> = {}
-  const HEADER_RE = /^\[(\w+)\s+"([^"]*)"\]/gm
-  let m: RegExpExecArray | null
-  while ((m = HEADER_RE.exec(pgn)) !== null) headers[m[1]] = m[2]
-  return headers
-}
-
-interface MoveToken {
-  san: string
-  clockSeconds: number | null
-}
-
-/** Walks the PGN movetext in order, pairing each SAN move with the clock time
- *  (if any) from its trailing `{[%clk h:mm:ss]}` comment. Order matches
- *  chess.js's `history()` ply order. */
-function tokenizeMoves(pgn: string): MoveToken[] {
-  // Headers are a block of `[Key "Value"]` lines followed by a blank line;
-  // movetext comments also contain `]` (e.g. `{[%clk 0:09:58]}`), so we can't
-  // just find the last `]` in the whole string to locate the header/movetext
-  // boundary -- split on the blank line instead.
+function tokenizeMoves(pgn) {
   const blankLineIdx = pgn.search(/\n\s*\n/)
   const movetext = blankLineIdx === -1 ? pgn : pgn.slice(blankLineIdx)
 
-  const tokens: MoveToken[] = []
+  const tokens = []
   const TOKEN_RE = /([^\s{}]+)(\s*\{([^}]*)\})?/g
-  let match: RegExpExecArray | null
+  let match
   while ((match = TOKEN_RE.exec(movetext)) !== null) {
     const raw = match[1]
     if (!raw) continue
-    // Skip move numbers ("1." / "1..."), NAGs ("$1"), and the result token.
     if (/^\d+\.+$/.test(raw)) continue
     if (raw.startsWith('$')) continue
     if (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(raw)) continue
 
     const comment = match[3] ?? ''
     const clkMatch = comment.match(/\[%clk\s*([\d:.]+)\]/)
-    tokens.push({
-      san: raw,
-      clockSeconds: clkMatch ? parseClockToSeconds(clkMatch[1]) : null,
-    })
+    tokens.push({ san: raw, clockSeconds: clkMatch ? parseClockToSeconds(clkMatch[1]) : null })
   }
   return tokens
 }
 
-function emptyColorStats(): ColorStats {
+function emptyColorStats() {
   return {
     captures: 0,
     checks: 0,
@@ -122,25 +104,29 @@ function emptyColorStats(): ColorStats {
   }
 }
 
-export function parseGameStats(pgn: string): ParsedGameStats {
+/** Reads PGN headers directly with a regex rather than via chess.js, so
+ *  headers are still available even for games chess.js can't load. */
+function parseHeadersRaw(pgn) {
+  const headers = {}
+  const HEADER_RE = /^\[(\w+)\s+"([^"]*)"\]/gm
+  let m
+  while ((m = HEADER_RE.exec(pgn)) !== null) headers[m[1]] = m[2]
+  return headers
+}
+
+function parseGameStats(pgn) {
   const headers = parseHeadersRaw(pgn)
   const clockTokens = tokenizeMoves(pgn)
   const { base, increment } = parseTimeControl(headers.TimeControl)
 
   const white = emptyColorStats()
   const black = emptyColorStats()
-  const ownMoves: Record<Color, TimedMove[]> = { w: [], b: [] }
-  const lastClock: Record<Color, number | null> = { w: base, b: base }
-  let firstCaptureColor: Color | null = null
+  const ownMoves = { w: [], b: [] }
+  const lastClock = { w: base, b: base }
+  let firstCaptureColor = null
   let plyCount = clockTokens.length
 
-  // chess.js validates the resulting board position (and, for a custom start
-  // FEN, its castling rights) even with strict:false, and throws on some real
-  // chess.com games it considers invalid -- e.g. certain Chess960 starts. Board-
-  // aware stats (captures/checks/king walk) are only available when this
-  // succeeds; clock-based stats below fall back to move order alone, so a game
-  // chess.js can't load still gets partial stats instead of blocking import.
-  let verbose: ReturnType<Chess['history']> | null = null
+  let verbose = null
   try {
     const chess = new Chess()
     chess.loadPgn(pgn, { strict: false })
@@ -152,7 +138,7 @@ export function parseGameStats(pgn: string): ParsedGameStats {
 
   if (verbose) {
     verbose.forEach((move, ply) => {
-      const color = move.color as Color
+      const color = move.color
       const stats = color === 'w' ? white : black
 
       if (move.captured) {
@@ -173,7 +159,6 @@ export function parseGameStats(pgn: string): ParsedGameStats {
       const prevClock = lastClock[color]
       const timeSpentSeconds =
         clockSeconds != null && prevClock != null
-          // Round to avoid float drift from decimal clock values (e.g. "0:02:59.9").
           ? Math.round(Math.max(0, prevClock + increment - clockSeconds) * 10) / 10
           : null
       if (clockSeconds != null) lastClock[color] = clockSeconds
@@ -181,9 +166,8 @@ export function parseGameStats(pgn: string): ParsedGameStats {
       ownMoves[color].push({ ply, san: move.san, timeSpentSeconds })
     })
   } else {
-    // Move color alternates strictly by ply regardless of variant/start position.
     clockTokens.forEach((token, ply) => {
-      const color: Color = ply % 2 === 0 ? 'w' : 'b'
+      const color = ply % 2 === 0 ? 'w' : 'b'
       const clockSeconds = token.clockSeconds
       const prevClock = lastClock[color]
       const timeSpentSeconds =
@@ -195,11 +179,11 @@ export function parseGameStats(pgn: string): ParsedGameStats {
     })
   }
 
-  for (const color of ['w', 'b'] as Color[]) {
+  for (const color of ['w', 'b']) {
     const stats = color === 'w' ? white : black
     const moves = ownMoves[color]
 
-    const timedSeconds: number[] = []
+    const timedSeconds = []
     for (const m of moves) {
       if (m.timeSpentSeconds != null && (stats.brainFreezeSeconds == null || m.timeSpentSeconds > stats.brainFreezeSeconds)) {
         stats.brainFreezeSeconds = m.timeSpentSeconds
@@ -216,7 +200,7 @@ export function parseGameStats(pgn: string): ParsedGameStats {
     for (let i = 0; i + BULLET_TRAIN_WINDOW <= moves.length; i++) {
       const window = moves.slice(i, i + BULLET_TRAIN_WINDOW)
       if (window.some((m) => m.timeSpentSeconds == null)) continue
-      const sum = Math.round(window.reduce((acc, m) => acc + (m.timeSpentSeconds as number), 0) * 10) / 10
+      const sum = Math.round(window.reduce((acc, m) => acc + m.timeSpentSeconds, 0) * 10) / 10
       if (stats.bulletTrainSeconds == null || sum < stats.bulletTrainSeconds) {
         stats.bulletTrainSeconds = sum
         stats.bulletTrainStartPly = window[0].ply
@@ -244,3 +228,36 @@ export function parseGameStats(pgn: string): ParsedGameStats {
     black,
   }
 }
+
+// ---------------------------------------------------------------------------
+
+const { data: games, error } = await db.from('games').select('id, pgn')
+if (error) {
+  console.error('Failed to read games:', error.message)
+  process.exit(1)
+}
+
+console.log(`${DRY ? '[dry-run] ' : ''}Recomputing stats for ${games?.length ?? 0} game(s)...`)
+
+let updated = 0
+let withTiming = 0
+let failed = 0
+
+for (const g of games ?? []) {
+  try {
+    const stats = parseGameStats(g.pgn)
+    if (stats.white.avgMoveTimeSeconds != null || stats.black.avgMoveTimeSeconds != null) {
+      withTiming++
+    }
+    if (!DRY) {
+      const { error: updateError } = await db.from('games').update({ stats }).eq('id', g.id)
+      if (updateError) throw new Error(updateError.message)
+    }
+    updated++
+  } catch (e) {
+    failed++
+    console.error(`  Failed on game ${g.id}: ${e.message}`)
+  }
+}
+
+console.log(`\n${DRY ? 'Would update' : 'Updated'} ${updated} game(s), ${withTiming} with move-timing data, ${failed} failed.`)

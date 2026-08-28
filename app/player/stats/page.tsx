@@ -89,6 +89,11 @@ export default function PlayerStatsPage() {
               value={stats.shortestGame ? `${stats.shortestGame.plyCount} plies` : '—'}
               subtitle={stats.shortestGame ? `vs ${stats.shortestGame.opponentName}` : undefined}
             />
+            <StatCard
+              title="Avg Game Length"
+              value={stats.avgGameLength != null ? `${Math.round(stats.avgGameLength)} plies` : '—'}
+              subtitle={`Across ${stats.gamesPlayed} games`}
+            />
             <StatCard title="Scholar's Mate Trap" value={stats.scholarsMateCount} subtitle="Decisive games in ≤5 moves" />
 
             <StatCard
@@ -117,6 +122,11 @@ export default function PlayerStatsPage() {
               subtitle={stats.brainFreeze ? `On ${stats.brainFreeze.san}, vs ${stats.brainFreeze.opponentName}` : 'Needs clock data'}
             />
             <StatCard title="First Blood" value={fmtPct(stats.firstBloodRate)} subtitle="% games with first capture" />
+            <StatCard
+              title="Avg Time / Move"
+              value={stats.avgMoveTimeSeconds != null ? fmtSeconds(stats.avgMoveTimeSeconds) : '—'}
+              subtitle={stats.avgMoveTimeSeconds != null ? 'Across games with clock data' : 'Needs clock data'}
+            />
 
             <StatCard
               title="Greedy Captures"
@@ -125,6 +135,18 @@ export default function PlayerStatsPage() {
             />
             <StatCard title="Check Spammer" value={stats.checkSpammer.total} subtitle="Total checks given" />
             <StatCard title="King Walk Distance" value={`${stats.kingWalkSquares.total} sq`} subtitle="Total squares traveled" />
+            <StatCard
+              title="Captures / Game"
+              value={stats.perGameRates ? stats.perGameRates.captures.toFixed(1) : '—'}
+            />
+            <StatCard
+              title="Checks / Game"
+              value={stats.perGameRates ? stats.perGameRates.checks.toFixed(1) : '—'}
+            />
+            <StatCard
+              title="King Walk / Game"
+              value={stats.perGameRates ? `${stats.perGameRates.kingWalkSquares.toFixed(1)} sq` : '—'}
+            />
 
             <StatCard
               title="Format Bias — 10+2"
@@ -144,6 +166,16 @@ export default function PlayerStatsPage() {
 
             {stats.favoriteOpening && (
               <StatCard title="Favorite Opening" value={stats.favoriteOpening.moves} subtitle={`Played ${stats.favoriteOpening.count} times`} />
+            )}
+            <StatCard title="Opening Variety" value={stats.openingVariety} subtitle="Distinct openings played" />
+
+            {stats.monthlyWinRate.length > 0 && (
+              <StatCard
+                title="Win Rate Trend"
+                value={fmtPct(stats.monthlyWinRate[stats.monthlyWinRate.length - 1].value / 100)}
+                subtitle="By month (last 12)"
+                bars={stats.monthlyWinRate}
+              />
             )}
           </div>
         </>

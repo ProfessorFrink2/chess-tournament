@@ -40,6 +40,11 @@ export interface PlayerStats {
   favoriteOpening: { moves: string; count: number } | null
   colorSplit: { whiteWinRate: number | null; blackWinRate: number | null }
   decisiveGameRate: number | null
+  avgGameLength: number | null
+  perGameRates: { captures: number; checks: number; kingWalkSquares: number } | null
+  avgMoveTimeSeconds: number | null
+  openingVariety: number
+  monthlyWinRate: { label: string; value: number }[]
 }
 
 function openingKey(pgn: string): string | null {
@@ -103,6 +108,10 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
   let longestWinStreak = 0
   let longestLossStreak = 0
 
+  let totalPlies = 0
+  const moveTimeSamples: number[] = []
+  const monthlyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
+
   for (const g of rows) {
     const isWhite = g.white_player_id === playerId
     const opponentId = isWhite ? g.black_player_id : g.white_player_id
@@ -110,6 +119,15 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     const won = (isWhite && g.result === 'white_wins') || (!isWhite && g.result === 'black_wins')
     const lost = (isWhite && g.result === 'black_wins') || (!isWhite && g.result === 'white_wins')
     const drew = g.result === 'draw'
+
+    totalPlies += g.ply_count
+
+    const monthKey = g.end_time.slice(0, 7)
+    const bucket = monthlyBuckets.get(monthKey) ?? { wins: 0, draws: 0, losses: 0 }
+    if (won) bucket.wins++
+    else if (lost) bucket.losses++
+    else bucket.draws++
+    monthlyBuckets.set(monthKey, bucket)
 
     if (!longestGame || g.ply_count > longestGame.plyCount) {
       longestGame = { plyCount: g.ply_count, opponentName, url: g.chess_com_url, endTime: g.end_time }
@@ -144,6 +162,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       }
       totalChecks += mine.checks
       totalKingWalk += mine.kingWalkSquares
+      if (mine.avgMoveTimeSeconds != null) moveTimeSamples.push(mine.avgMoveTimeSeconds)
 
       if (mine.bulletTrainSeconds != null && (bulletTrain == null || mine.bulletTrainSeconds < bulletTrain.seconds)) {
         bulletTrain = { seconds: mine.bulletTrainSeconds, opponentName, url: g.chess_com_url }
@@ -205,6 +224,19 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     return { ...b, winRate: b.wins / total }
   }
 
+  const monthlyWinRate = [...monthlyBuckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, b]) => {
+      const total = b.wins + b.draws + b.losses
+      const [year, month] = key.split('-').map(Number)
+      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
+        month: 'short',
+        timeZone: 'UTC',
+      })
+      return { label, value: total > 0 ? Math.round((b.wins / total) * 100) : 0 }
+    })
+    .slice(-12)
+
   return {
     gamesPlayed: rows.length,
     trophies,
@@ -231,5 +263,14 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       blackWinRate: blackGames > 0 ? blackWins / blackGames : null,
     },
     decisiveGameRate: rows.length > 0 ? decisive / rows.length : null,
+    avgGameLength: rows.length > 0 ? totalPlies / rows.length : null,
+    perGameRates: rows.length > 0
+      ? { captures: totalCaptures / rows.length, checks: totalChecks / rows.length, kingWalkSquares: totalKingWalk / rows.length }
+      : null,
+    avgMoveTimeSeconds: moveTimeSamples.length > 0
+      ? moveTimeSamples.reduce((a, b) => a + b, 0) / moveTimeSamples.length
+      : null,
+    openingVariety: openingCounts.size,
+    monthlyWinRate,
   }
 }
