@@ -125,7 +125,8 @@ export default function PlayerStatsPage() {
             <StatCard
               title="Avg Time / Move"
               value={stats.avgMoveTimeSeconds != null ? fmtSeconds(stats.avgMoveTimeSeconds) : '—'}
-              subtitle={stats.avgMoveTimeSeconds != null ? 'Across games with clock data' : 'Needs clock data'}
+              subtitle={stats.avgMoveTimeSeconds != null ? 'By month (last 12)' : 'Needs clock data'}
+              bars={stats.monthlyAvgMoveTime.length > 0 ? stats.monthlyAvgMoveTime : undefined}
             />
 
             <StatCard

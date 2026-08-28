@@ -45,6 +45,7 @@ export interface PlayerStats {
   avgMoveTimeSeconds: number | null
   openingVariety: number
   monthlyWinRate: { label: string; value: number }[]
+  monthlyAvgMoveTime: { label: string; value: number }[]
 }
 
 function openingKey(pgn: string): string | null {
@@ -111,6 +112,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
   let totalPlies = 0
   const moveTimeSamples: number[] = []
   const monthlyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
+  const monthlyMoveTimeBuckets = new Map<string, number[]>()
 
   for (const g of rows) {
     const isWhite = g.white_player_id === playerId
@@ -162,7 +164,12 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       }
       totalChecks += mine.checks
       totalKingWalk += mine.kingWalkSquares
-      if (mine.avgMoveTimeSeconds != null) moveTimeSamples.push(mine.avgMoveTimeSeconds)
+      if (mine.avgMoveTimeSeconds != null) {
+        moveTimeSamples.push(mine.avgMoveTimeSeconds)
+        const bucket = monthlyMoveTimeBuckets.get(monthKey) ?? []
+        bucket.push(mine.avgMoveTimeSeconds)
+        monthlyMoveTimeBuckets.set(monthKey, bucket)
+      }
 
       if (mine.bulletTrainSeconds != null && (bulletTrain == null || mine.bulletTrainSeconds < bulletTrain.seconds)) {
         bulletTrain = { seconds: mine.bulletTrainSeconds, opponentName, url: g.chess_com_url }
@@ -237,6 +244,18 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     })
     .slice(-12)
 
+  const monthlyAvgMoveTime = [...monthlyMoveTimeBuckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, samples]) => {
+      const [year, month] = key.split('-').map(Number)
+      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
+        month: 'short',
+        timeZone: 'UTC',
+      })
+      return { label, value: Math.round((samples.reduce((a, b) => a + b, 0) / samples.length) * 10) / 10 }
+    })
+    .slice(-12)
+
   return {
     gamesPlayed: rows.length,
     trophies,
@@ -272,5 +291,6 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       : null,
     openingVariety: openingCounts.size,
     monthlyWinRate,
+    monthlyAvgMoveTime,
   }
 }
