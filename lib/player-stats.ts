@@ -39,6 +39,10 @@ export interface PlayerStats {
   longestLossStreak: number
   favoriteOpening: { moves: string; count: number } | null
   colorSplit: { whiteWinRate: number | null; blackWinRate: number | null }
+  colorOutcomes: {
+    white: { wins: number; draws: number; losses: number }
+    black: { wins: number; draws: number; losses: number }
+  }
   decisiveGameRate: number | null
   avgGameLength: number | null
   perGameRates: { captures: number; checks: number; kingWalkSquares: number } | null
@@ -46,6 +50,7 @@ export interface PlayerStats {
   openingVariety: number
   monthlyWinRate: { label: string; value: number }[]
   monthlyAvgMoveTime: { label: string; value: number }[]
+  monthlyAvgGameLength: { label: string; value: number }[]
 }
 
 function openingKey(pgn: string): string | null {
@@ -99,8 +104,12 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
   let scholarsMateCount = 0
   const openingCounts = new Map<string, number>()
   let whiteWins = 0
+  let whiteDraws = 0
+  let whiteLosses = 0
   let whiteGames = 0
   let blackWins = 0
+  let blackDraws = 0
+  let blackLosses = 0
   let blackGames = 0
   let decisive = 0
 
@@ -113,6 +122,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
   const moveTimeSamples: number[] = []
   const monthlyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
   const monthlyMoveTimeBuckets = new Map<string, number[]>()
+  const monthlyPlyBuckets = new Map<string, number[]>()
 
   for (const g of rows) {
     const isWhite = g.white_player_id === playerId
@@ -130,6 +140,10 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     else if (lost) bucket.losses++
     else bucket.draws++
     monthlyBuckets.set(monthKey, bucket)
+
+    const plyBucket = monthlyPlyBuckets.get(monthKey) ?? []
+    plyBucket.push(g.ply_count)
+    monthlyPlyBuckets.set(monthKey, plyBucket)
 
     if (!longestGame || g.ply_count > longestGame.plyCount) {
       longestGame = { plyCount: g.ply_count, opponentName, url: g.chess_com_url, endTime: g.end_time }
@@ -190,8 +204,17 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     const key = openingKey(g.pgn)
     if (key) openingCounts.set(key, (openingCounts.get(key) ?? 0) + 1)
 
-    if (isWhite) { whiteGames++; if (won) whiteWins++ }
-    else { blackGames++; if (won) blackWins++ }
+    if (isWhite) {
+      whiteGames++
+      if (won) whiteWins++
+      else if (lost) whiteLosses++
+      else whiteDraws++
+    } else {
+      blackGames++
+      if (won) blackWins++
+      else if (lost) blackLosses++
+      else blackDraws++
+    }
 
     if (!drew) decisive++
 
@@ -256,6 +279,18 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     })
     .slice(-12)
 
+  const monthlyAvgGameLength = [...monthlyPlyBuckets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, samples]) => {
+      const [year, month] = key.split('-').map(Number)
+      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
+        month: 'short',
+        timeZone: 'UTC',
+      })
+      return { label, value: Math.round(samples.reduce((a, b) => a + b, 0) / samples.length) }
+    })
+    .slice(-12)
+
   return {
     gamesPlayed: rows.length,
     trophies,
@@ -281,6 +316,10 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       whiteWinRate: whiteGames > 0 ? whiteWins / whiteGames : null,
       blackWinRate: blackGames > 0 ? blackWins / blackGames : null,
     },
+    colorOutcomes: {
+      white: { wins: whiteWins, draws: whiteDraws, losses: whiteLosses },
+      black: { wins: blackWins, draws: blackDraws, losses: blackLosses },
+    },
     decisiveGameRate: rows.length > 0 ? decisive / rows.length : null,
     avgGameLength: rows.length > 0 ? totalPlies / rows.length : null,
     perGameRates: rows.length > 0
@@ -292,5 +331,6 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     openingVariety: openingCounts.size,
     monthlyWinRate,
     monthlyAvgMoveTime,
+    monthlyAvgGameLength,
   }
 }

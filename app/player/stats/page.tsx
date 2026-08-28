@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Player } from '@/lib/database.types'
 import { PlayerStats } from '@/lib/player-stats'
 import StatCard from '@/components/StatCard'
+import ColorOutcomeSunburst from '@/components/ColorOutcomeSunburst'
 import Link from 'next/link'
 
 function fmtSeconds(s: number): string {
@@ -92,7 +93,8 @@ export default function PlayerStatsPage() {
             <StatCard
               title="Avg Game Length"
               value={stats.avgGameLength != null ? `${Math.round(stats.avgGameLength)} plies` : '—'}
-              subtitle={`Across ${stats.gamesPlayed} games`}
+              subtitle="By month (last 12)"
+              bars={stats.monthlyAvgGameLength.length > 0 ? stats.monthlyAvgGameLength : undefined}
             />
             <StatCard title="Scholar's Mate Trap" value={stats.scholarsMateCount} subtitle="Decisive games in ≤5 moves" />
 
@@ -164,6 +166,11 @@ export default function PlayerStatsPage() {
               value={`${fmtPct(stats.colorSplit.whiteWinRate)} / ${fmtPct(stats.colorSplit.blackWinRate)}`}
               subtitle="Win rate as White / Black"
             />
+
+            <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wide">Color &amp; Outcome Breakdown</p>
+              <ColorOutcomeSunburst colorOutcomes={stats.colorOutcomes} />
+            </div>
 
             {stats.favoriteOpening && (
               <StatCard title="Favorite Opening" value={stats.favoriteOpening.moves} subtitle={`Played ${stats.favoriteOpening.count} times`} />
