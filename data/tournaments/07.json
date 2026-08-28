@@ -632,45 +632,55 @@
     },
     "C": {
       "format": "single_elim",
-      "_comment": "No C bracket exists in fwtournament7.zip. Placings are from TournamentResults.pdf.",
+      "_comment": "Bracket recovered from '7 C Division Playoff Bracket.pdf'. 10 of the 11 entrants are seeded on the bracket; Julian does not appear on it (no seed, no match) but is retained in TournamentResults.pdf's placements at 11th.",
       "entrants": [
         {
+          "seed": 1,
           "name": "Dan",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 2,
           "name": "Shapes",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 3,
           "name": "Alejandra",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 4,
           "name": "Darius",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 5,
           "name": "Sandra",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 6,
           "name": "Mary-Rose",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 7,
           "name": "Trevor",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 8,
           "name": "Elise",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 9,
           "name": "Pat",
           "source": "TournamentResults.pdf"
         },
         {
+          "seed": 10,
           "name": "Charlie",
           "source": "TournamentResults.pdf"
         },
@@ -736,7 +746,110 @@
           "source": "TournamentResults.pdf"
         }
       ],
-      "matches": []
+      "matches": [
+        {
+          "round": 1,
+          "slot": 1,
+          "a": "Elise",
+          "b": "Pat",
+          "seed_a": 8,
+          "seed_b": 9,
+          "winner": "Elise",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 1,
+          "slot": 2,
+          "a": "Darius",
+          "b": "Sandra",
+          "seed_a": 4,
+          "seed_b": 5,
+          "winner": "Darius",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 1,
+          "slot": 3,
+          "a": "Trevor",
+          "b": "Charlie",
+          "seed_a": 7,
+          "seed_b": 10,
+          "winner": "Trevor",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 1,
+          "slot": 4,
+          "a": "Alejandra",
+          "b": "Mary-Rose",
+          "seed_a": 3,
+          "seed_b": 6,
+          "winner": "Alejandra",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 2,
+          "slot": 1,
+          "a": "Dan",
+          "b": "Elise",
+          "seed_a": 1,
+          "seed_b": 8,
+          "winner": "Dan",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 2,
+          "slot": 2,
+          "a": "Shapes",
+          "b": "Trevor",
+          "seed_a": 2,
+          "seed_b": 7,
+          "winner": "Shapes",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 3,
+          "slot": 1,
+          "a": "Dan",
+          "b": "Darius",
+          "seed_a": 1,
+          "seed_b": 4,
+          "winner": "Dan",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 3,
+          "slot": 2,
+          "a": "Shapes",
+          "b": "Alejandra",
+          "seed_a": 2,
+          "seed_b": 3,
+          "winner": "Shapes",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 4,
+          "slot": 1,
+          "a": "Darius",
+          "b": "Alejandra",
+          "seed_a": 4,
+          "seed_b": 3,
+          "winner": "Alejandra",
+          "medal_game": true,
+          "label": "Third Place",
+          "source": "7 C Division Playoff Bracket.pdf"
+        },
+        {
+          "round": 4,
+          "slot": 2,
+          "a": "Dan",
+          "b": "Shapes",
+          "seed_a": 1,
+          "seed_b": 2,
+          "winner": "Dan",
+          "source": "7 C Division Playoff Bracket.pdf"
+        }
+      ]
     }
   }
 }

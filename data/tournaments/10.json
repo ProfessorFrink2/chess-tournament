@@ -608,23 +608,27 @@
     },
     "B": {
       "format": "single_elim",
-      "_comment": "No bracket for the B playoff survives. Final placings are from TournamentResults.pdf; the folder holds only the B league standings.",
+      "_comment": "Championship bracket recovered from '10 B Division Championship Bracket.pdf' (top 4 only). Places 5 and below are from TournamentResults.pdf; the folder holds only the B league standings for those.",
       "entrants": [
         {
-          "name": "Paul",
-          "source": "TournamentResults.pdf"
-        },
-        {
           "name": "Dan",
-          "source": "TournamentResults.pdf"
+          "seed": 1,
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
-          "name": "Matt",
-          "source": "TournamentResults.pdf"
+          "name": "Paul",
+          "seed": 2,
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "name": "Alejandra",
-          "source": "TournamentResults.pdf"
+          "seed": 3,
+          "source": "10 B Division Championship Bracket.pdf"
+        },
+        {
+          "name": "Matt",
+          "seed": 4,
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "name": "Brian",
@@ -655,22 +659,22 @@
         {
           "place": 1,
           "name": "Paul",
-          "source": "TournamentResults.pdf"
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "place": 2,
           "name": "Dan",
-          "source": "TournamentResults.pdf"
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "place": 3,
           "name": "Matt",
-          "source": "TournamentResults.pdf"
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "place": 4,
           "name": "Alejandra",
-          "source": "TournamentResults.pdf"
+          "source": "10 B Division Championship Bracket.pdf"
         },
         {
           "place": 5,
@@ -703,7 +707,50 @@
           "source": "TournamentResults.pdf"
         }
       ],
-      "matches": []
+      "matches": [
+        {
+          "round": 1,
+          "slot": 1,
+          "a": "Dan",
+          "b": "Matt",
+          "seed_a": 1,
+          "seed_b": 4,
+          "winner": "Dan",
+          "source": "10 B Division Championship Bracket.pdf"
+        },
+        {
+          "round": 1,
+          "slot": 2,
+          "a": "Paul",
+          "b": "Alejandra",
+          "seed_a": 2,
+          "seed_b": 3,
+          "winner": "Paul",
+          "source": "10 B Division Championship Bracket.pdf"
+        },
+        {
+          "round": 2,
+          "slot": 1,
+          "a": "Alejandra",
+          "b": "Matt",
+          "seed_a": 3,
+          "seed_b": 4,
+          "winner": "Matt",
+          "medal_game": true,
+          "label": "Third Place",
+          "source": "10 B Division Championship Bracket.pdf"
+        },
+        {
+          "round": 2,
+          "slot": 2,
+          "a": "Dan",
+          "b": "Paul",
+          "seed_a": 1,
+          "seed_b": 2,
+          "winner": "Paul",
+          "source": "10 B Division Championship Bracket.pdf"
+        }
+      ]
     }
   }
 }

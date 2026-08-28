@@ -179,23 +179,35 @@
     },
     "C": {
       "format": "single_elim",
-      "_note": "No C playoff bracket exists. Top C players (Gustavo, Trevor) entered the B division bracket instead. Standings only.",
+      "_note": "Bracket recovered from '8 C Division Playoff Bracket.pdf'. Gustavo and Trevor also entered the combined B+C bracket as seeds 8 and 10 (see division B's note) in addition to playing this native C bracket.",
+      "_comment": "Places 5-9 are eliminated in rounds 1-2 and are not distinguishable in finishing order from the bracket alone (no consolation bracket).",
       "entrants": [
-        { "name": "Trevor"    },
-        { "name": "Alejandra" },
-        { "name": "Shapes"    },
-        { "name": "Elise"     },
-        { "name": "Gustavo"   },
-        { "name": "Darius"    },
-        { "name": "Krista"    },
-        { "name": "Natno"     },
-        { "name": "Charlie"   }
+        { "name": "Trevor",    "seed": 1 },
+        { "name": "Shapes",    "seed": 2 },
+        { "name": "Gustavo",   "seed": 3 },
+        { "name": "Alejandra", "seed": 4 },
+        { "name": "Elise",     "seed": 5 },
+        { "name": "Darius",    "seed": 6 },
+        { "name": "Krista",    "seed": 7 },
+        { "name": "Natno",     "seed": 8 },
+        { "name": "Charlie",   "seed": 9 }
       ],
-      "matches": [],
+      "matches": [
+        { "round": 1, "slot": 1, "a": "Natno",     "seed_a": 8, "b": "Charlie", "seed_b": 9, "winner": "Natno",     "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 1, "slot": 2, "a": "Alejandra", "seed_a": 4, "b": "Elise",   "seed_b": 5, "winner": "Alejandra", "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 1, "slot": 3, "a": "Shapes",    "seed_a": 2, "b": "Krista",  "seed_b": 7, "winner": "Shapes",    "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 1, "slot": 4, "a": "Gustavo",   "seed_a": 3, "b": "Darius",  "seed_b": 6, "winner": "Gustavo",   "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 2, "slot": 1, "a": "Trevor",    "seed_a": 1, "b": "Natno",   "seed_b": 8, "winner": "Trevor",    "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 2, "slot": 2, "a": "Shapes",    "seed_a": 2, "b": "Gustavo", "seed_b": 3, "winner": "Gustavo",   "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 3, "slot": 1, "a": "Trevor",    "seed_a": 1, "b": "Alejandra", "seed_b": 4, "winner": "Alejandra", "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 4, "slot": 1, "a": "Trevor",    "b": "Shapes",    "winner": "Trevor",  "medal_game": true, "label": "Third Place", "source": "8 C Division Playoff Bracket.pdf" },
+        { "round": 4, "slot": 2, "a": "Alejandra", "b": "Gustavo",   "winner": "Gustavo", "source": "8 C Division Playoff Bracket.pdf" }
+      ],
       "placements": [
-        { "place": 1, "name": "Gustavo",   "source": "TournamentResults.pdf" },
-        { "place": 2, "name": "Alejandra", "source": "TournamentResults.pdf" },
-        { "place": 3, "name": "Trevor",    "source": "TournamentResults.pdf" }
+        { "place": 1, "name": "Gustavo",   "source": "8 C Division Playoff Bracket.pdf" },
+        { "place": 2, "name": "Alejandra", "source": "8 C Division Playoff Bracket.pdf" },
+        { "place": 3, "name": "Trevor",    "source": "8 C Division Playoff Bracket.pdf" },
+        { "place": 4, "name": "Shapes",    "source": "8 C Division Playoff Bracket.pdf" }
       ]
     }
   }

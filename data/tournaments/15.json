@@ -8,7 +8,8 @@
   "notes": [
     "STANDALONE \u2014 no league standings, so no season.",
     "'Random wheel' format: pairings drawn at random rather than seeded.",
-    "The ENTIRE surviving record is the top three, listed in the body of a forwarded email. There is no bracket, no full entrant list, no scores and no match data. Only the three medallists are imported.",
+    "No bracket, scores, or match data survive \u2014 only the final placement order, extended from the top three to a full 12-player finish via a plain-text message from the organizer.",
+    "Places 4 and 5 were reported solo; 6-8 and 9-12 were reported as tied groups rather than a strict order. Each member of a tied group is recorded with the group's starting place, matching the source notation ('6-8.', '9-12.').",
     "Usernames are carried over from the standings sheets of other tournaments in which these same people appear."
   ],
   "season": null,
@@ -24,6 +25,42 @@
     {
       "name": "Taras",
       "username": "Dambl"
+    },
+    {
+      "name": "Nathan",
+      "username": "fgrrghg"
+    },
+    {
+      "name": "Ben",
+      "username": "smithbwa"
+    },
+    {
+      "name": "Terry",
+      "username": "temcgrat"
+    },
+    {
+      "name": "Steve",
+      "username": "ScubaStavi"
+    },
+    {
+      "name": "Rob",
+      "username": "Robmon13"
+    },
+    {
+      "name": "Dan",
+      "username": "djdanidu"
+    },
+    {
+      "name": "Jeff A",
+      "username": "jeffsappendix1"
+    },
+    {
+      "name": "Bogdan",
+      "username": "Bohdan7770"
+    },
+    {
+      "name": "Aitor",
+      "username": "Aitorgaldos"
     }
   ],
   "standings": {},
@@ -40,6 +77,33 @@
         },
         {
           "name": "Taras"
+        },
+        {
+          "name": "Nathan"
+        },
+        {
+          "name": "Ben"
+        },
+        {
+          "name": "Terry"
+        },
+        {
+          "name": "Steve"
+        },
+        {
+          "name": "Rob"
+        },
+        {
+          "name": "Dan"
+        },
+        {
+          "name": "Jeff A"
+        },
+        {
+          "name": "Bogdan"
+        },
+        {
+          "name": "Aitor"
         }
       ],
       "placements": [
@@ -54,6 +118,42 @@
         {
           "place": 3,
           "name": "Taras"
+        },
+        {
+          "place": 4,
+          "name": "Nathan"
+        },
+        {
+          "place": 5,
+          "name": "Ben"
+        },
+        {
+          "place": 6,
+          "name": "Terry"
+        },
+        {
+          "place": 6,
+          "name": "Steve"
+        },
+        {
+          "place": 6,
+          "name": "Rob"
+        },
+        {
+          "place": 9,
+          "name": "Dan"
+        },
+        {
+          "place": 9,
+          "name": "Jeff A"
+        },
+        {
+          "place": 9,
+          "name": "Bogdan"
+        },
+        {
+          "place": 9,
+          "name": "Aitor"
         }
       ],
       "matches": []

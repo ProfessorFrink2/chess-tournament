@@ -106,10 +106,10 @@ export default function ColorOutcomeSunburst({ colorOutcomes }: { colorOutcomes:
   return (
     <svg viewBox="0 0 300 300" className="w-full max-w-[300px] mx-auto" aria-hidden>
       {ring1.map((s, i) => (
-        <path key={`r1-${i}`} d={s.path} fill={s.fill} />
+        <path key={`r1-${i}`} d={s.path} fill={s.fill} stroke="#1f2937" strokeWidth={2} />
       ))}
       {ring2.map((s, i) => (
-        <path key={`r2-${i}`} d={s.path} fill={s.fill} opacity={0.85} />
+        <path key={`r2-${i}`} d={s.path} fill={s.fill} opacity={0.85} stroke="#1f2937" strokeWidth={2} />
       ))}
       {ring1.map((s, i) => (
         <text
