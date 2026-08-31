@@ -48,9 +48,21 @@ export interface PlayerStats {
   perGameRates: { captures: number; checks: number; kingWalkSquares: number } | null
   avgMoveTimeSeconds: number | null
   openingVariety: number
-  monthlyWinRate: { label: string; value: number }[]
-  monthlyAvgMoveTime: { label: string; value: number }[]
-  monthlyAvgGameLength: { label: string; value: number }[]
+  weeklyWinRate: { label: string; value: number }[]
+  weeklyAvgMoveTime: { label: string; value: number }[]
+  weeklyAvgGameLength: { label: string; value: number }[]
+}
+
+/** Monday (UTC) of the week containing the given ISO date/timestamp string,
+ *  used as both the sort key ('2026-08-25') and the chart label ('Aug 25'). */
+function weekOf(isoDateStr: string): { key: string; label: string } {
+  const d = new Date(isoDateStr)
+  const diffToMonday = (d.getUTCDay() + 6) % 7
+  const monday = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - diffToMonday))
+  return {
+    key: monday.toISOString().slice(0, 10),
+    label: monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }),
+  }
 }
 
 function openingKey(pgn: string): string | null {
@@ -120,9 +132,9 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
   let totalPlies = 0
   const moveTimeSamples: number[] = []
-  const monthlyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
-  const monthlyMoveTimeBuckets = new Map<string, number[]>()
-  const monthlyPlyBuckets = new Map<string, number[]>()
+  const weeklyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
+  const weeklyMoveTimeBuckets = new Map<string, number[]>()
+  const weeklyPlyBuckets = new Map<string, number[]>()
 
   for (const g of rows) {
     const isWhite = g.white_player_id === playerId
@@ -134,16 +146,16 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
     totalPlies += g.ply_count
 
-    const monthKey = g.end_time.slice(0, 7)
-    const bucket = monthlyBuckets.get(monthKey) ?? { wins: 0, draws: 0, losses: 0 }
+    const weekKey = weekOf(g.end_time).key
+    const bucket = weeklyBuckets.get(weekKey) ?? { wins: 0, draws: 0, losses: 0 }
     if (won) bucket.wins++
     else if (lost) bucket.losses++
     else bucket.draws++
-    monthlyBuckets.set(monthKey, bucket)
+    weeklyBuckets.set(weekKey, bucket)
 
-    const plyBucket = monthlyPlyBuckets.get(monthKey) ?? []
+    const plyBucket = weeklyPlyBuckets.get(weekKey) ?? []
     plyBucket.push(g.ply_count)
-    monthlyPlyBuckets.set(monthKey, plyBucket)
+    weeklyPlyBuckets.set(weekKey, plyBucket)
 
     if (!longestGame || g.ply_count > longestGame.plyCount) {
       longestGame = { plyCount: g.ply_count, opponentName, url: g.chess_com_url, endTime: g.end_time }
@@ -180,9 +192,9 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       totalKingWalk += mine.kingWalkSquares
       if (mine.avgMoveTimeSeconds != null) {
         moveTimeSamples.push(mine.avgMoveTimeSeconds)
-        const bucket = monthlyMoveTimeBuckets.get(monthKey) ?? []
+        const bucket = weeklyMoveTimeBuckets.get(weekKey) ?? []
         bucket.push(mine.avgMoveTimeSeconds)
-        monthlyMoveTimeBuckets.set(monthKey, bucket)
+        weeklyMoveTimeBuckets.set(weekKey, bucket)
       }
 
       if (mine.bulletTrainSeconds != null && (bulletTrain == null || mine.bulletTrainSeconds < bulletTrain.seconds)) {
@@ -254,41 +266,28 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     return { ...b, winRate: b.wins / total }
   }
 
-  const monthlyWinRate = [...monthlyBuckets.entries()]
+  const weeklyWinRate = [...weeklyBuckets.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, b]) => {
       const total = b.wins + b.draws + b.losses
-      const [year, month] = key.split('-').map(Number)
-      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
-        month: 'short',
-        timeZone: 'UTC',
-      })
-      return { label, value: total > 0 ? Math.round((b.wins / total) * 100) : 0 }
+      return { label: weekOf(key).label, value: total > 0 ? Math.round((b.wins / total) * 100) : 0 }
     })
     .slice(-12)
 
-  const monthlyAvgMoveTime = [...monthlyMoveTimeBuckets.entries()]
+  const weeklyAvgMoveTime = [...weeklyMoveTimeBuckets.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, samples]) => {
-      const [year, month] = key.split('-').map(Number)
-      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
-        month: 'short',
-        timeZone: 'UTC',
-      })
-      return { label, value: Math.round((samples.reduce((a, b) => a + b, 0) / samples.length) * 10) / 10 }
-    })
+    .map(([key, samples]) => ({
+      label: weekOf(key).label,
+      value: Math.round((samples.reduce((a, b) => a + b, 0) / samples.length) * 10) / 10,
+    }))
     .slice(-12)
 
-  const monthlyAvgGameLength = [...monthlyPlyBuckets.entries()]
+  const weeklyAvgGameLength = [...weeklyPlyBuckets.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, samples]) => {
-      const [year, month] = key.split('-').map(Number)
-      const label = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
-        month: 'short',
-        timeZone: 'UTC',
-      })
-      return { label, value: Math.round(samples.reduce((a, b) => a + b, 0) / samples.length) }
-    })
+    .map(([key, samples]) => ({
+      label: weekOf(key).label,
+      value: Math.round(samples.reduce((a, b) => a + b, 0) / samples.length),
+    }))
     .slice(-12)
 
   return {
@@ -329,8 +328,8 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       ? moveTimeSamples.reduce((a, b) => a + b, 0) / moveTimeSamples.length
       : null,
     openingVariety: openingCounts.size,
-    monthlyWinRate,
-    monthlyAvgMoveTime,
-    monthlyAvgGameLength,
+    weeklyWinRate,
+    weeklyAvgMoveTime,
+    weeklyAvgGameLength,
   }
 }

@@ -76,6 +76,32 @@ export default function PlayerStatsPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wide">Game Breakdown</p>
+              <ColorOutcomeSunburst colorOutcomes={stats.colorOutcomes} />
+            </div>
+
+            <StatCard
+              title="Avg Game Length"
+              value={stats.avgGameLength != null ? `${Math.round(stats.avgGameLength)} plies` : '—'}
+              subtitle="By week (last 12)"
+              bars={stats.weeklyAvgGameLength.length > 0 ? stats.weeklyAvgGameLength : undefined}
+            />
+            <StatCard
+              title="Avg Time / Move"
+              value={stats.avgMoveTimeSeconds != null ? fmtSeconds(stats.avgMoveTimeSeconds) : '—'}
+              subtitle={stats.avgMoveTimeSeconds != null ? 'By week (last 12)' : 'Needs clock data'}
+              bars={stats.weeklyAvgMoveTime.length > 0 ? stats.weeklyAvgMoveTime : undefined}
+            />
+            {stats.weeklyWinRate.length > 0 && (
+              <StatCard
+                title="Win Rate Trend"
+                value={fmtPct(stats.weeklyWinRate[stats.weeklyWinRate.length - 1].value / 100)}
+                subtitle="By week (last 12)"
+                bars={stats.weeklyWinRate}
+              />
+            )}
+
             <StatCard title="Games Played" value={stats.gamesPlayed} />
             <StatCard title="Trophies" value={stats.trophies} subtitle="Season + championship wins" />
             <StatCard title="Decisive Games" value={fmtPct(stats.decisiveGameRate)} subtitle="Non-draw rate" />
@@ -89,12 +115,6 @@ export default function PlayerStatsPage() {
               title="Shortest Game"
               value={stats.shortestGame ? `${stats.shortestGame.plyCount} plies` : '—'}
               subtitle={stats.shortestGame ? `vs ${stats.shortestGame.opponentName}` : undefined}
-            />
-            <StatCard
-              title="Avg Game Length"
-              value={stats.avgGameLength != null ? `${Math.round(stats.avgGameLength)} plies` : '—'}
-              subtitle="By month (last 12)"
-              bars={stats.monthlyAvgGameLength.length > 0 ? stats.monthlyAvgGameLength : undefined}
             />
             <StatCard title="Scholar's Mate Trap" value={stats.scholarsMateCount} subtitle="Decisive games in ≤5 moves" />
 
@@ -124,12 +144,6 @@ export default function PlayerStatsPage() {
               subtitle={stats.brainFreeze ? `On ${stats.brainFreeze.san}, vs ${stats.brainFreeze.opponentName}` : 'Needs clock data'}
             />
             <StatCard title="First Blood" value={fmtPct(stats.firstBloodRate)} subtitle="% games with first capture" />
-            <StatCard
-              title="Avg Time / Move"
-              value={stats.avgMoveTimeSeconds != null ? fmtSeconds(stats.avgMoveTimeSeconds) : '—'}
-              subtitle={stats.avgMoveTimeSeconds != null ? 'By month (last 12)' : 'Needs clock data'}
-              bars={stats.monthlyAvgMoveTime.length > 0 ? stats.monthlyAvgMoveTime : undefined}
-            />
 
             <StatCard
               title="Greedy Captures"
@@ -167,24 +181,10 @@ export default function PlayerStatsPage() {
               subtitle="Win rate as White / Black"
             />
 
-            <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
-              <p className="text-xs text-gray-400 uppercase tracking-wide">Color &amp; Outcome Breakdown</p>
-              <ColorOutcomeSunburst colorOutcomes={stats.colorOutcomes} />
-            </div>
-
             {stats.favoriteOpening && (
               <StatCard title="Favorite Opening" value={stats.favoriteOpening.moves} subtitle={`Played ${stats.favoriteOpening.count} times`} />
             )}
             <StatCard title="Opening Variety" value={stats.openingVariety} subtitle="Distinct openings played" />
-
-            {stats.monthlyWinRate.length > 0 && (
-              <StatCard
-                title="Win Rate Trend"
-                value={fmtPct(stats.monthlyWinRate[stats.monthlyWinRate.length - 1].value / 100)}
-                subtitle="By month (last 12)"
-                bars={stats.monthlyWinRate}
-              />
-            )}
           </div>
         </>
       )}
