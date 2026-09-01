@@ -26,6 +26,20 @@ function resultLabel(m: Match): string {
   return 'Pending'
 }
 
+function PlayerLink({ player }: { player: { display_name: string; chess_com_username: string | null } }) {
+  if (!player.chess_com_username) return <span className="truncate">{player.display_name}</span>
+  return (
+    <a
+      href={`https://www.chess.com/member/${player.chess_com_username}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="truncate hover:underline hover:text-white"
+    >
+      {player.display_name}
+    </a>
+  )
+}
+
 function dateColor(m: Match): string {
   if (m.result !== 'pending') return 'text-gray-600'
   const today = new Date().toISOString().split('T')[0]
@@ -206,9 +220,9 @@ export default function MatchList({ matches: initialMatches }: { matches: Match[
                           {badge}
                         </span>
                       )}
-                      <span className="truncate">{m.white_player.display_name}</span>
+                      <PlayerLink player={m.white_player} />
                       <span className="text-gray-600 shrink-0">vs</span>
-                      <span className="truncate">{m.black_player.display_name}</span>
+                      <PlayerLink player={m.black_player} />
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {game && (() => {
