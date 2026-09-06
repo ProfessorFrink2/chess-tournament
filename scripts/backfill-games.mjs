@@ -366,8 +366,11 @@ async function backfillLeagueMatches() {
         // known game URL may only turn up in a later month's archive.
         for (let offset = -3; offset <= 2 && !game; offset++) {
           const d = new Date(end.getFullYear(), end.getMonth() - offset, 1)
-          const games = await getMonthlyGames(whiteUsername, d.getFullYear(), d.getMonth() + 1)
-          game = games.find((g) => g.url.includes(idMatch[1])) ?? null
+          for (const username of [whiteUsername, blackUsername]) {
+            const games = await getMonthlyGames(username, d.getFullYear(), d.getMonth() + 1)
+            game = games.find((g) => g.url.includes(idMatch[1])) ?? null
+            if (game) break
+          }
         }
       }
     }
@@ -377,8 +380,10 @@ async function backfillLeagueMatches() {
       const endDate = new Date(m.scheduled_end)
       endDate.setHours(23, 59, 59, 999)
       const endTs = Math.floor(endDate.getTime() / 1000)
-      const games = await getMonthlyGames(whiteUsername, endDate.getFullYear(), endDate.getMonth() + 1)
-      game = findMatchGame(games, blackUsername, startTs, endTs)
+      game = findMatchGame(await getMonthlyGames(whiteUsername, endDate.getFullYear(), endDate.getMonth() + 1), blackUsername, startTs, endTs)
+      if (!game) {
+        game = findMatchGame(await getMonthlyGames(blackUsername, endDate.getFullYear(), endDate.getMonth() + 1), whiteUsername, startTs, endTs)
+      }
     }
 
     if (!game) {

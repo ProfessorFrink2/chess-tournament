@@ -78,13 +78,19 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch that game from chess.com to derive the result
-  // The game URL contains the game ID — find it in either player's recent months
+  // The game URL contains the game ID — find it in either player's recent months.
+  // Chess.com's monthly archive updates asynchronously per-account, so a
+  // freshly-finished game can show up in one player's archive well before the
+  // other's — check both usernames, not just the tournament-designated white player.
   const now = new Date()
   let foundGame = null
   for (let monthOffset = 0; monthOffset <= 6 && !foundGame; monthOffset++) {
     const d = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1)
-    const games = await getMonthlyGames(whiteUsername, d.getFullYear(), d.getMonth() + 1)
-    foundGame = games.find(g => g.url.includes(urlMatch[1])) ?? null
+    for (const username of [whiteUsername, blackUsername]) {
+      const games = await getMonthlyGames(username, d.getFullYear(), d.getMonth() + 1)
+      foundGame = games.find(g => g.url.includes(urlMatch[1])) ?? null
+      if (foundGame) break
+    }
   }
 
   if (!foundGame) {

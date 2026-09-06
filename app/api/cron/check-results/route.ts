@@ -54,10 +54,14 @@ export async function GET(req: NextRequest) {
     const year = endDate.getFullYear()
     const month = endDate.getMonth() + 1
 
-    const games = await getMonthlyGames(whiteUsername, year, month)
     checked++
 
-    const game = findMatchGame(games, blackUsername, startTs, endTs)
+    // Chess.com's monthly archive updates asynchronously per-account, so check
+    // both players' archives rather than just the tournament-designated white player.
+    let game = findMatchGame(await getMonthlyGames(whiteUsername, year, month), blackUsername, startTs, endTs)
+    if (!game) {
+      game = findMatchGame(await getMonthlyGames(blackUsername, year, month), whiteUsername, startTs, endTs)
+    }
     if (game) {
       const result = deriveResult(game, whiteUsername)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
