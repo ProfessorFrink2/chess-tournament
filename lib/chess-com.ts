@@ -63,7 +63,12 @@ export function findMatchGame(
   )
 }
 
-/** Derive match result from a chess.com game, from the perspective of white/black player IDs. */
+const DRAW_RESULTS = ['agreed', 'stalemate', 'repetition', '50move', 'insufficient', 'timevsinsufficient']
+
+/** Derive match result from a chess.com game, from the perspective of white/black player IDs.
+ *  chess.com assigns colors randomly per game — a player's DB "white_player_id" on the match
+ *  row is just a label, not a color the game actually honors — so this maps the tournament-
+ *  designated white player's real in-game side back onto white_wins/black_wins. */
 export function deriveResult(
   game: ChessComGame,
   whiteUsername: string
@@ -71,8 +76,16 @@ export function deriveResult(
   // Find which side the tournament-white player took in the chess.com game (may differ from tournament color)
   const tournWhitePlayed = game.white.username.toLowerCase() === whiteUsername.toLowerCase()
     ? game.white : game.black
-  const DRAW_RESULTS = ['agreed', 'stalemate', 'repetition', '50move', 'insufficient', 'timevsinsufficient']
   if (tournWhitePlayed.result === 'win') return 'white_wins'
   if (DRAW_RESULTS.includes(tournWhitePlayed.result)) return 'draw'
+  return 'black_wins'
+}
+
+/** Derive a game's result relative to the *actual* colors played (game.white/game.black),
+ *  for storing alongside games.white_player_id/black_player_id — which should always be the
+ *  real in-game colors, not the tournament's arbitrary white/black label. */
+export function deriveGameResult(game: ChessComGame): 'white_wins' | 'black_wins' | 'draw' {
+  if (game.white.result === 'win') return 'white_wins'
+  if (DRAW_RESULTS.includes(game.white.result)) return 'draw'
   return 'black_wins'
 }

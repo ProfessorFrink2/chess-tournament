@@ -41,6 +41,7 @@ export default function PlayerPage() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [allMatches, setAllMatches] = useState<MatchWithPlayers[]>([])
+  const [actualIsWhiteByMatchId, setActualIsWhiteByMatchId] = useState<Record<string, boolean>>({})
   const [tournamentMatches, setTournamentMatches] = useState<(TournamentMatchWithPlayers & { tournament: Pick<Tournament, 'id' | 'name' | 'number'> | null })[]>([])
   const [chessGames, setChessGames] = useState<ChessComGame[]>([])
   const [usernameToName, setUsernameToName] = useState<Record<string, string>>({})
@@ -102,6 +103,22 @@ export default function PlayerPage() {
     setTournamentMatches((tMatches ?? []) as any)
     setLoading(false)
 
+    // chess.com assigns colors randomly per game — the match row's white/black_player_id
+    // is just a scheduling label, not the color actually played. Look up the real color
+    // from the imported game (falls back to the label for matches with no game imported yet).
+    const matchIds = (matches ?? []).map(m => m.id)
+    if (matchIds.length) {
+      const { data: gameRows } = await supabase
+        .from('games')
+        .select('match_id, white_player_id')
+        .in('match_id', matchIds)
+      const map: Record<string, boolean> = {}
+      for (const g of (gameRows ?? []) as { match_id: string | null; white_player_id: string }[]) {
+        if (g.match_id) map[g.match_id] = g.white_player_id === p.id
+      }
+      setActualIsWhiteByMatchId(map)
+    }
+
     // Fetch chess.com game history in background
     if (!p.chess_com_username) return
     setChessLoading(true)
@@ -145,8 +162,13 @@ export default function PlayerPage() {
   const opponent = (match: MatchWithPlayers) =>
     match.white_player_id === player.id ? match.black_player : match.white_player
 
-  const colorFor = (match: MatchWithPlayers) =>
-    match.white_player_id === player.id ? 'White' : 'Black'
+  const colorFor = (match: MatchWithPlayers) => {
+    const actualIsWhite = actualIsWhiteByMatchId[match.id]
+    if (actualIsWhite !== undefined) return actualIsWhite ? 'White' : 'Black'
+    // No imported game yet (e.g. a manually-reported result) — fall back to the
+    // scheduling label, which chess.com doesn't actually honor as a real color.
+    return match.white_player_id === player.id ? 'White' : 'Black'
+  }
 
   // Find chess.com games already played against a given opponent username
   function foundGamesFor(oppUsername: string | null): ChessComGame[] {

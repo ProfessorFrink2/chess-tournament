@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
-import { getMonthlyGames, findMatchGame, deriveResult } from '@/lib/chess-com'
+import { getMonthlyGames, findMatchGame, deriveResult, deriveGameResult } from '@/lib/chess-com'
 import { upsertGameFromChessCom } from '@/lib/games'
 
 export const runtime = 'nodejs'
@@ -67,11 +67,16 @@ export async function GET(req: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await db.from('matches').update({ result, chess_com_game_url: game.url, last_checked_at: new Date().toISOString() } as any).eq('id', m.id)
       try {
+        // chess.com assigns colors randomly per game, independent of the tournament's
+        // white/black label on the match row — store the games table's colors as the
+        // colors actually played so per-color stats (parsed from the PGN's real
+        // colors) attribute to the right player.
+        const whitePlayedWhite = game.white.username.toLowerCase() === whiteUsername.toLowerCase()
         await upsertGameFromChessCom(db, {
           matchId: m.id,
-          whitePlayerId: m.white_player_id,
-          blackPlayerId: m.black_player_id,
-          result,
+          whitePlayerId: whitePlayedWhite ? m.white_player_id : m.black_player_id,
+          blackPlayerId: whitePlayedWhite ? m.black_player_id : m.white_player_id,
+          result: deriveGameResult(game),
           chessGame: game,
         })
       } catch (err) {

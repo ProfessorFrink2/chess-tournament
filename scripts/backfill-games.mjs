@@ -79,12 +79,23 @@ function findMatchGame(games, opponentUsername, startTs, endTs) {
   )
 }
 
+const DRAW_RESULTS = ['agreed', 'stalemate', 'repetition', '50move', 'insufficient', 'timevsinsufficient']
+
 function deriveResult(game, whiteUsername) {
   const tournWhitePlayed =
     game.white.username.toLowerCase() === whiteUsername.toLowerCase() ? game.white : game.black
-  const DRAW_RESULTS = ['agreed', 'stalemate', 'repetition', '50move', 'insufficient', 'timevsinsufficient']
   if (tournWhitePlayed.result === 'win') return 'white_wins'
   if (DRAW_RESULTS.includes(tournWhitePlayed.result)) return 'draw'
+  return 'black_wins'
+}
+
+// chess.com assigns colors randomly per game, independent of the tournament's white/black
+// label on the match row — games.white_player_id/black_player_id must be the colors
+// actually played, since games.stats.white/black are parsed straight from the PGN's real
+// colors (mirrors lib/chess-com.ts's deriveGameResult).
+function deriveGameResult(game) {
+  if (game.white.result === 'win') return 'white_wins'
+  if (DRAW_RESULTS.includes(game.white.result)) return 'draw'
   return 'black_wins'
 }
 
@@ -392,12 +403,12 @@ async function backfillLeagueMatches() {
     }
     if (alreadyImported.has(game.url)) continue
 
-    const result = deriveResult(game, whiteUsername)
+    const whitePlayedWhite = game.white.username.toLowerCase() === whiteUsername.toLowerCase()
     await upsertGame({
       matchId: m.id,
-      whitePlayerId: m.white_player_id,
-      blackPlayerId: m.black_player_id,
-      result,
+      whitePlayerId: whitePlayedWhite ? m.white_player_id : m.black_player_id,
+      blackPlayerId: whitePlayedWhite ? m.black_player_id : m.white_player_id,
+      result: deriveGameResult(game),
       chessGame: game,
     })
     imported++

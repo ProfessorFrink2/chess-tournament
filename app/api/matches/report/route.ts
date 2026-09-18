@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { MatchResult } from '@/lib/database.types'
-import { getMonthlyGames, deriveResult } from '@/lib/chess-com'
+import { getMonthlyGames, deriveResult, deriveGameResult } from '@/lib/chess-com'
 import { upsertGameFromChessCom } from '@/lib/games'
 
 const CHESS_COM_GAME_RE = /^https:\/\/www\.chess\.com\/game\/live\/(\d+)/i
@@ -115,11 +115,16 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   try {
+    // chess.com assigns colors randomly per game, independent of the tournament's
+    // white/black label on the match row — store the games table's colors as the
+    // colors actually played, not the tournament label, so per-color stats (which
+    // are parsed straight from the PGN's real colors) attribute to the right player.
+    const whitePlayedWhite = foundGame.white.username.toLowerCase() === whiteUsername.toLowerCase()
     await upsertGameFromChessCom(db, {
       matchId,
-      whitePlayerId: m.white_player_id,
-      blackPlayerId: m.black_player_id,
-      result,
+      whitePlayerId: whitePlayedWhite ? m.white_player_id : m.black_player_id,
+      blackPlayerId: whitePlayedWhite ? m.black_player_id : m.white_player_id,
+      result: deriveGameResult(foundGame),
       chessGame: foundGame,
     })
   } catch (err) {
