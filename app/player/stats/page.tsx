@@ -20,6 +20,12 @@ function fmtPct(n: number | null): string {
   return n == null ? '—' : `${Math.round(n * 100)}%`
 }
 
+/** chess.com's game page highlights the position after the Nth half-move via
+ *  ?move=N, 1-indexed — our stored ply is 0-indexed, so add 1. */
+function moveUrl(url: string, ply: number): string {
+  return `${url}?move=${ply + 1}`
+}
+
 export default function PlayerStatsPage() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
@@ -136,12 +142,50 @@ export default function PlayerStatsPage() {
             <StatCard
               title="The Bullet Train"
               value={stats.bulletTrain ? fmtSeconds(stats.bulletTrain.seconds) : '—'}
-              subtitle={stats.bulletTrain ? `Fastest 5 moves, vs ${stats.bulletTrain.opponentName}` : 'Needs clock data'}
+              subtitle={
+                stats.bulletTrain ? (
+                  <>
+                    Fastest 5 moves, vs {stats.bulletTrain.opponentName}
+                    {stats.bulletTrain.startPly != null && (
+                      <>
+                        {' — '}
+                        <a
+                          href={moveUrl(stats.bulletTrain.url, stats.bulletTrain.startPly)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-400 hover:text-indigo-300 underline"
+                        >
+                          view move
+                        </a>
+                      </>
+                    )}
+                  </>
+                ) : 'Needs clock data'
+              }
             />
             <StatCard
               title="Brain Freeze"
               value={stats.brainFreeze ? fmtSeconds(stats.brainFreeze.seconds) : '—'}
-              subtitle={stats.brainFreeze ? `On ${stats.brainFreeze.san}, vs ${stats.brainFreeze.opponentName}` : 'Needs clock data'}
+              subtitle={
+                stats.brainFreeze ? (
+                  <>
+                    On {stats.brainFreeze.san}, vs {stats.brainFreeze.opponentName}
+                    {stats.brainFreeze.ply != null && (
+                      <>
+                        {' — '}
+                        <a
+                          href={moveUrl(stats.brainFreeze.url, stats.brainFreeze.ply)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-400 hover:text-indigo-300 underline"
+                        >
+                          view move
+                        </a>
+                      </>
+                    )}
+                  </>
+                ) : 'Needs clock data'
+              }
             />
             <StatCard title="First Blood" value={fmtPct(stats.firstBloodRate)} subtitle="% games with first capture" />
 

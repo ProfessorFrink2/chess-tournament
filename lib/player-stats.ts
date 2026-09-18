@@ -28,8 +28,8 @@ export interface PlayerStats {
   nemesis: { name: string; losses: number; gamesPlayed: number } | null
   victim: { name: string; wins: number; gamesPlayed: number } | null
   formatBias: { standard: FormatBucket | null; chess960: FormatBucket | null }
-  bulletTrain: { seconds: number; opponentName: string; url: string } | null
-  brainFreeze: { seconds: number; san: string; opponentName: string; url: string } | null
+  bulletTrain: { seconds: number; opponentName: string; url: string; startPly: number | null } | null
+  brainFreeze: { seconds: number; san: string; opponentName: string; url: string; ply: number | null } | null
   greedyCaptures: { total: number; mostInOneGame: { count: number; opponentName: string; url: string } | null }
   checkSpammer: { total: number }
   kingWalkSquares: { total: number }
@@ -198,10 +198,10 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       }
 
       if (mine.bulletTrainSeconds != null && (bulletTrain == null || mine.bulletTrainSeconds < bulletTrain.seconds)) {
-        bulletTrain = { seconds: mine.bulletTrainSeconds, opponentName, url: g.chess_com_url }
+        bulletTrain = { seconds: mine.bulletTrainSeconds, opponentName, url: g.chess_com_url, startPly: mine.bulletTrainStartPly }
       }
       if (mine.brainFreezeSeconds != null && (brainFreeze == null || mine.brainFreezeSeconds > brainFreeze.seconds)) {
-        brainFreeze = { seconds: mine.brainFreezeSeconds, san: mine.brainFreezeSan ?? '', opponentName, url: g.chess_com_url }
+        brainFreeze = { seconds: mine.brainFreezeSeconds, san: mine.brainFreezeSan ?? '', opponentName, url: g.chess_com_url, ply: mine.brainFreezePly }
       }
     }
 

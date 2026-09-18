@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 interface BarDatum {
   label: string
   value: number
@@ -6,7 +8,7 @@ interface BarDatum {
 interface Props {
   title: string
   value: string | number
-  subtitle?: string
+  subtitle?: ReactNode
   bars?: BarDatum[]
 }
 
