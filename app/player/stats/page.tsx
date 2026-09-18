@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Player } from '@/lib/database.types'
@@ -24,6 +24,19 @@ function fmtPct(n: number | null): string {
  *  ?move=N, 1-indexed — our stored ply is 0-indexed, so add 1. */
 function moveUrl(url: string, ply: number): string {
   return `${url}?move=${ply + 1}`
+}
+
+function GameLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-indigo-400 hover:text-indigo-300 underline"
+    >
+      {children}
+    </a>
+  )
 }
 
 export default function PlayerStatsPage() {
@@ -115,14 +128,25 @@ export default function PlayerStatsPage() {
             <StatCard
               title="Longest Game"
               value={stats.longestGame ? `${stats.longestGame.plyCount} plies` : '—'}
-              subtitle={stats.longestGame ? `vs ${stats.longestGame.opponentName}` : undefined}
+              subtitle={
+                stats.longestGame ? (
+                  <>
+                    vs {stats.longestGame.opponentName} — <GameLink href={stats.longestGame.url}>view game</GameLink>
+                  </>
+                ) : undefined
+              }
             />
             <StatCard
               title="Shortest Game"
               value={stats.shortestGame ? `${stats.shortestGame.plyCount} plies` : '—'}
-              subtitle={stats.shortestGame ? `vs ${stats.shortestGame.opponentName}` : undefined}
+              subtitle={
+                stats.shortestGame ? (
+                  <>
+                    vs {stats.shortestGame.opponentName} — <GameLink href={stats.shortestGame.url}>view game</GameLink>
+                  </>
+                ) : undefined
+              }
             />
-            <StatCard title="Scholar's Mate Trap" value={stats.scholarsMateCount} subtitle="Decisive games in ≤5 moves" />
 
             <StatCard
               title="Nemesis"
@@ -149,14 +173,7 @@ export default function PlayerStatsPage() {
                     {stats.bulletTrain.startPly != null && (
                       <>
                         {' — '}
-                        <a
-                          href={moveUrl(stats.bulletTrain.url, stats.bulletTrain.startPly)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-400 hover:text-indigo-300 underline"
-                        >
-                          view move
-                        </a>
+                        <GameLink href={moveUrl(stats.bulletTrain.url, stats.bulletTrain.startPly)}>view move</GameLink>
                       </>
                     )}
                   </>
@@ -173,14 +190,7 @@ export default function PlayerStatsPage() {
                     {stats.brainFreeze.ply != null && (
                       <>
                         {' — '}
-                        <a
-                          href={moveUrl(stats.brainFreeze.url, stats.brainFreeze.ply)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-400 hover:text-indigo-300 underline"
-                        >
-                          view move
-                        </a>
+                        <GameLink href={moveUrl(stats.brainFreeze.url, stats.brainFreeze.ply)}>view move</GameLink>
                       </>
                     )}
                   </>
@@ -192,7 +202,15 @@ export default function PlayerStatsPage() {
             <StatCard
               title="Greedy Captures"
               value={stats.greedyCaptures.total}
-              subtitle={stats.greedyCaptures.mostInOneGame ? `Most in one game: ${stats.greedyCaptures.mostInOneGame.count} vs ${stats.greedyCaptures.mostInOneGame.opponentName}` : undefined}
+              subtitle={
+                stats.greedyCaptures.mostInOneGame ? (
+                  <>
+                    Most in one game: {stats.greedyCaptures.mostInOneGame.count} vs {stats.greedyCaptures.mostInOneGame.opponentName}
+                    {' — '}
+                    <GameLink href={stats.greedyCaptures.mostInOneGame.url}>view game</GameLink>
+                  </>
+                ) : undefined
+              }
             />
             <StatCard title="Check Spammer" value={stats.checkSpammer.total} subtitle="Total checks given" />
             <StatCard title="King Walk Distance" value={`${stats.kingWalkSquares.total} sq`} subtitle="Total squares traveled" />
@@ -210,12 +228,12 @@ export default function PlayerStatsPage() {
             />
 
             <StatCard
-              title="Format Bias — 10+2"
+              title="10+2 Win Rate"
               value={stats.formatBias.standard ? fmtPct(stats.formatBias.standard.winRate) : '—'}
               subtitle={stats.formatBias.standard ? `${stats.formatBias.standard.wins}W ${stats.formatBias.standard.draws}D ${stats.formatBias.standard.losses}L` : 'No data'}
             />
             <StatCard
-              title="Format Bias — Chess960"
+              title="Chess960 Win Rate"
               value={stats.formatBias.chess960 ? fmtPct(stats.formatBias.chess960.winRate) : '—'}
               subtitle={stats.formatBias.chess960 ? `${stats.formatBias.chess960.wins}W ${stats.formatBias.chess960.draws}D ${stats.formatBias.chess960.losses}L` : 'No data'}
             />
