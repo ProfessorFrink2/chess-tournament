@@ -149,16 +149,6 @@ export default function PlayerStatsPage() {
             />
 
             <StatCard
-              title="Nemesis"
-              value={stats.nemesis?.name ?? '—'}
-              subtitle={stats.nemesis ? `${stats.nemesis.losses} losses in ${stats.nemesis.gamesPlayed} games` : 'No repeat losses yet'}
-            />
-            <StatCard
-              title="Victim"
-              value={stats.victim?.name ?? '—'}
-              subtitle={stats.victim ? `${stats.victim.wins} wins in ${stats.victim.gamesPlayed} games` : 'No repeat wins yet'}
-            />
-            <StatCard
               title="Longest Streak"
               value={stats.longestWinStreak > 0 ? `${stats.longestWinStreak}W` : stats.longestLossStreak > 0 ? `${stats.longestLossStreak}L` : '—'}
             />
