@@ -112,14 +112,12 @@ export default function PlayerStatsPage() {
               subtitle={stats.avgMoveTimeSeconds != null ? 'Last 12 games' : 'Needs clock data'}
               bars={stats.recentAvgMoveTime.length > 0 ? stats.recentAvgMoveTime : undefined}
             />
-            {stats.recentWinRate.length > 0 && (
+            {stats.monthlyWinRate.length > 0 && (
               <StatCard
                 title="Win Rate Trend"
-                value={fmtPct(
-                  stats.recentWinRate.reduce((sum, g) => sum + g.value, 0) / stats.recentWinRate.length / 100
-                )}
-                subtitle="Last 12 games"
-                bars={stats.recentWinRate}
+                value={fmtPct(stats.monthlyWinRate[stats.monthlyWinRate.length - 1].value / 100)}
+                subtitle="By month (last 24)"
+                bars={stats.monthlyWinRate}
               />
             )}
 
