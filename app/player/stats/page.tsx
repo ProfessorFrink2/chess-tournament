@@ -112,13 +112,26 @@ export default function PlayerStatsPage() {
               subtitle={stats.avgMoveTimeSeconds != null ? 'Last 12 games' : 'Needs clock data'}
               bars={stats.recentAvgMoveTime.length > 0 ? stats.recentAvgMoveTime : undefined}
             />
-            {stats.monthlyWinRate.length > 0 && (
-              <StatCard
-                title="Win Rate Trend"
-                value={fmtPct(stats.monthlyWinRate[stats.monthlyWinRate.length - 1].value / 100)}
-                subtitle="By month (last 24)"
-                bars={stats.monthlyWinRate}
-              />
+            {stats.gameResults.length > 0 && (
+              <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
+                <p className="text-xs text-gray-400 uppercase tracking-wide">Game Results</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {stats.gameResults.map((g, i) => (
+                    <a
+                      key={i}
+                      href={g.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`${g.label} vs ${g.opponentName} — ${
+                        g.result === 'win' ? 'Win' : g.result === 'loss' ? 'Loss' : 'Draw'
+                      }`}
+                      className="text-lg leading-none hover:scale-125 transition-transform"
+                    >
+                      {g.result === 'win' ? '✅' : g.result === 'loss' ? '❌' : '⚖️'}
+                    </a>
+                  ))}
+                </div>
+              </div>
             )}
 
             <StatCard title="Games Played" value={stats.gamesPlayed} />

@@ -48,7 +48,7 @@ export interface PlayerStats {
   perGameRates: { captures: number; checks: number; kingWalkSquares: number } | null
   avgMoveTimeSeconds: number | null
   openingVariety: number
-  monthlyWinRate: { label: string; value: number }[]
+  gameResults: { result: 'win' | 'draw' | 'loss'; label: string; opponentName: string; url: string }[]
   recentAvgMoveTime: { label: string; value: number }[]
   recentGameLength: { label: string; value: number }[]
 }
@@ -58,22 +58,6 @@ export interface PlayerStats {
  *  is equivalent to per-game and just obscures individual-game swings. */
 function gameLabel(isoDateStr: string): string {
   return new Date(isoDateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
-}
-
-/** Sortable year-month key, e.g. '2026-09'. */
-function monthKey(isoDateStr: string): string {
-  const d = new Date(isoDateStr)
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
-}
-
-/** Short chart label for a month bucket, e.g. 'Sep 26'. */
-function monthLabel(key: string): string {
-  const [year, month] = key.split('-').map(Number)
-  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
-    month: 'short',
-    year: '2-digit',
-    timeZone: 'UTC',
-  })
 }
 
 function openingKey(pgn: string): string | null {
@@ -143,7 +127,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
   let totalPlies = 0
   const moveTimeSamples: number[] = []
-  const monthlyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
+  const gameResults: PlayerStats['gameResults'] = []
   const recentGameLength: { label: string; value: number }[] = []
   const recentAvgMoveTime: { label: string; value: number }[] = []
 
@@ -159,13 +143,12 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
     const label = gameLabel(g.end_time)
     recentGameLength.push({ label, value: g.ply_count })
-
-    const mKey = monthKey(g.end_time)
-    const mBucket = monthlyBuckets.get(mKey) ?? { wins: 0, draws: 0, losses: 0 }
-    if (won) mBucket.wins++
-    else if (drew) mBucket.draws++
-    else mBucket.losses++
-    monthlyBuckets.set(mKey, mBucket)
+    gameResults.push({
+      result: won ? 'win' : lost ? 'loss' : 'draw',
+      label,
+      opponentName,
+      url: g.chess_com_url,
+    })
 
     if (!longestGame || g.ply_count > longestGame.plyCount) {
       longestGame = { plyCount: g.ply_count, opponentName, url: g.chess_com_url, endTime: g.end_time }
@@ -312,13 +295,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       ? moveTimeSamples.reduce((a, b) => a + b, 0) / moveTimeSamples.length
       : null,
     openingVariety: openingCounts.size,
-    monthlyWinRate: [...monthlyBuckets.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, b]) => ({
-        label: monthLabel(key),
-        value: Math.round((b.wins / (b.wins + b.draws + b.losses)) * 100),
-      }))
-      .slice(-24),
+    gameResults,
     recentAvgMoveTime: recentAvgMoveTime.slice(-12),
     recentGameLength: recentGameLength.slice(-12),
   }
