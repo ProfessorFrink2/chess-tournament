@@ -48,21 +48,16 @@ export interface PlayerStats {
   perGameRates: { captures: number; checks: number; kingWalkSquares: number } | null
   avgMoveTimeSeconds: number | null
   openingVariety: number
-  weeklyWinRate: { label: string; value: number }[]
-  weeklyAvgMoveTime: { label: string; value: number }[]
-  weeklyAvgGameLength: { label: string; value: number }[]
+  recentWinRate: { label: string; value: number }[]
+  recentAvgMoveTime: { label: string; value: number }[]
+  recentGameLength: { label: string; value: number }[]
 }
 
-/** Monday (UTC) of the week containing the given ISO date/timestamp string,
- *  used as both the sort key ('2026-08-25') and the chart label ('Aug 25'). */
-function weekOf(isoDateStr: string): { key: string; label: string } {
-  const d = new Date(isoDateStr)
-  const diffToMonday = (d.getUTCDay() + 6) % 7
-  const monday = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - diffToMonday))
-  return {
-    key: monday.toISOString().slice(0, 10),
-    label: monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }),
-  }
+/** Short chart label for a single game, e.g. 'Aug 25'. One game per bar --
+ *  players play at most one game per week, so bucketing/averaging by week
+ *  is equivalent to per-game and just obscures individual-game swings. */
+function gameLabel(isoDateStr: string): string {
+  return new Date(isoDateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 function openingKey(pgn: string): string | null {
@@ -132,9 +127,9 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
   let totalPlies = 0
   const moveTimeSamples: number[] = []
-  const weeklyBuckets = new Map<string, { wins: number; draws: number; losses: number }>()
-  const weeklyMoveTimeBuckets = new Map<string, number[]>()
-  const weeklyPlyBuckets = new Map<string, number[]>()
+  const recentWinRate: { label: string; value: number }[] = []
+  const recentGameLength: { label: string; value: number }[] = []
+  const recentAvgMoveTime: { label: string; value: number }[] = []
 
   for (const g of rows) {
     const isWhite = g.white_player_id === playerId
@@ -146,16 +141,9 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
 
     totalPlies += g.ply_count
 
-    const weekKey = weekOf(g.end_time).key
-    const bucket = weeklyBuckets.get(weekKey) ?? { wins: 0, draws: 0, losses: 0 }
-    if (won) bucket.wins++
-    else if (lost) bucket.losses++
-    else bucket.draws++
-    weeklyBuckets.set(weekKey, bucket)
-
-    const plyBucket = weeklyPlyBuckets.get(weekKey) ?? []
-    plyBucket.push(g.ply_count)
-    weeklyPlyBuckets.set(weekKey, plyBucket)
+    const label = gameLabel(g.end_time)
+    recentWinRate.push({ label, value: won ? 100 : drew ? 50 : 0 })
+    recentGameLength.push({ label, value: g.ply_count })
 
     if (!longestGame || g.ply_count > longestGame.plyCount) {
       longestGame = { plyCount: g.ply_count, opponentName, url: g.chess_com_url, endTime: g.end_time }
@@ -192,9 +180,7 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       totalKingWalk += mine.kingWalkSquares
       if (mine.avgMoveTimeSeconds != null) {
         moveTimeSamples.push(mine.avgMoveTimeSeconds)
-        const bucket = weeklyMoveTimeBuckets.get(weekKey) ?? []
-        bucket.push(mine.avgMoveTimeSeconds)
-        weeklyMoveTimeBuckets.set(weekKey, bucket)
+        recentAvgMoveTime.push({ label, value: mine.avgMoveTimeSeconds })
       }
 
       if (mine.bulletTrainSeconds != null && (bulletTrain == null || mine.bulletTrainSeconds < bulletTrain.seconds)) {
@@ -266,30 +252,6 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
     return { ...b, winRate: b.wins / total }
   }
 
-  const weeklyWinRate = [...weeklyBuckets.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, b]) => {
-      const total = b.wins + b.draws + b.losses
-      return { label: weekOf(key).label, value: total > 0 ? Math.round((b.wins / total) * 100) : 0 }
-    })
-    .slice(-12)
-
-  const weeklyAvgMoveTime = [...weeklyMoveTimeBuckets.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, samples]) => ({
-      label: weekOf(key).label,
-      value: Math.round((samples.reduce((a, b) => a + b, 0) / samples.length) * 10) / 10,
-    }))
-    .slice(-12)
-
-  const weeklyAvgGameLength = [...weeklyPlyBuckets.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, samples]) => ({
-      label: weekOf(key).label,
-      value: Math.round(samples.reduce((a, b) => a + b, 0) / samples.length),
-    }))
-    .slice(-12)
-
   return {
     gamesPlayed: rows.length,
     trophies,
@@ -328,8 +290,8 @@ export async function getPlayerStats(db: Db, playerId: string): Promise<PlayerSt
       ? moveTimeSamples.reduce((a, b) => a + b, 0) / moveTimeSamples.length
       : null,
     openingVariety: openingCounts.size,
-    weeklyWinRate,
-    weeklyAvgMoveTime,
-    weeklyAvgGameLength,
+    recentWinRate: recentWinRate.slice(-12),
+    recentAvgMoveTime: recentAvgMoveTime.slice(-12),
+    recentGameLength: recentGameLength.slice(-12),
   }
 }

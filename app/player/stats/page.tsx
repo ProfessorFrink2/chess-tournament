@@ -103,21 +103,23 @@ export default function PlayerStatsPage() {
             <StatCard
               title="Avg Game Length"
               value={stats.avgGameLength != null ? `${Math.round(stats.avgGameLength)} plies` : '—'}
-              subtitle="By week (last 12)"
-              bars={stats.weeklyAvgGameLength.length > 0 ? stats.weeklyAvgGameLength : undefined}
+              subtitle="Last 12 games"
+              bars={stats.recentGameLength.length > 0 ? stats.recentGameLength : undefined}
             />
             <StatCard
               title="Avg Time / Move"
               value={stats.avgMoveTimeSeconds != null ? fmtSeconds(stats.avgMoveTimeSeconds) : '—'}
-              subtitle={stats.avgMoveTimeSeconds != null ? 'By week (last 12)' : 'Needs clock data'}
-              bars={stats.weeklyAvgMoveTime.length > 0 ? stats.weeklyAvgMoveTime : undefined}
+              subtitle={stats.avgMoveTimeSeconds != null ? 'Last 12 games' : 'Needs clock data'}
+              bars={stats.recentAvgMoveTime.length > 0 ? stats.recentAvgMoveTime : undefined}
             />
-            {stats.weeklyWinRate.length > 0 && (
+            {stats.recentWinRate.length > 0 && (
               <StatCard
                 title="Win Rate Trend"
-                value={fmtPct(stats.weeklyWinRate[stats.weeklyWinRate.length - 1].value / 100)}
-                subtitle="By week (last 12)"
-                bars={stats.weeklyWinRate}
+                value={fmtPct(
+                  stats.recentWinRate.reduce((sum, g) => sum + g.value, 0) / stats.recentWinRate.length / 100
+                )}
+                subtitle="Last 12 games"
+                bars={stats.recentWinRate}
               />
             )}
 
