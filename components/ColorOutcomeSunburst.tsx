@@ -48,8 +48,11 @@ interface Slice {
 
 export default function ColorOutcomeSunburst({ colorOutcomes }: { colorOutcomes: ColorOutcomes }) {
   const groups = [
-    { label: 'White', fill: WHITE_FILL, textFill: '#111827', outcomes: colorOutcomes.white },
-    { label: 'Black', fill: BLACK_FILL, textFill: '#f9fafb', outcomes: colorOutcomes.black },
+    { label: 'White', fill: WHITE_FILL, textFill: '#111827', outcomes: colorOutcomes.white, reverseOutcomes: false },
+    // Black's arc ends back at 12 o'clock (angle 360, same point White's arc starts
+    // from) — reversing its outcome order to Loss/Draw/Win puts Win last, so it lands
+    // right at that seam and reads as Win/Draw/Loss going counterclockwise from the top.
+    { label: 'Black', fill: BLACK_FILL, textFill: '#f9fafb', outcomes: colorOutcomes.black, reverseOutcomes: true },
   ].map((g) => ({ ...g, total: g.outcomes.wins + g.outcomes.draws + g.outcomes.losses }))
 
   const grandTotal = groups.reduce((sum, g) => sum + g.total, 0)
@@ -84,6 +87,7 @@ export default function ColorOutcomeSunburst({ colorOutcomes }: { colorOutcomes:
       ['Draw', g.outcomes.draws, DRAW_FILL],
       ['Loss', g.outcomes.losses, LOSS_FILL],
     ]
+    if (g.reverseOutcomes) outcomeParts.reverse()
     for (const [label, value, fill] of outcomeParts) {
       if (value === 0) continue
       const subSweep = (value / g.total) * sweep
