@@ -115,6 +115,9 @@ export default function PlayerStatsPage() {
             {stats.gameResults.length > 0 && (
               <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">Game Results</p>
+                <p className="text-3xl font-bold text-white">
+                  {fmtPct(stats.gameResults.filter((g) => g.result === 'win').length / stats.gameResults.length)}
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {stats.gameResults.map((g, i) => (
                     <a
