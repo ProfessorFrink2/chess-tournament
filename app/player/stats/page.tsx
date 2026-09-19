@@ -227,11 +227,8 @@ export default function PlayerStatsPage() {
               value={stats.formatBias.chess960 ? fmtPct(stats.formatBias.chess960.winRate) : '—'}
               subtitle={stats.formatBias.chess960 ? `${stats.formatBias.chess960.wins}W ${stats.formatBias.chess960.draws}D ${stats.formatBias.chess960.losses}L` : 'No data'}
             />
-            <StatCard
-              title="Color Split"
-              value={`${fmtPct(stats.colorSplit.whiteWinRate)} / ${fmtPct(stats.colorSplit.blackWinRate)}`}
-              subtitle="Win rate as White / Black"
-            />
+            <StatCard title="Win Rate As White" value={fmtPct(stats.colorSplit.whiteWinRate)} />
+            <StatCard title="Win Rate As Black" value={fmtPct(stats.colorSplit.blackWinRate)} />
 
             {stats.favoriteOpening && (
               <StatCard title="Favorite Opening" value={stats.favoriteOpening.moves} subtitle={`Played ${stats.favoriteOpening.count} times`} />
