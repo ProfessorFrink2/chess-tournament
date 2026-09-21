@@ -112,6 +112,8 @@ export default function PlayerStatsPage() {
               subtitle={stats.avgMoveTimeSeconds != null ? 'Last 12 games' : 'Needs clock data'}
               bars={stats.recentAvgMoveTime.length > 0 ? stats.recentAvgMoveTime : undefined}
             />
+            <StatCard title="Games Played" value={stats.gamesPlayed} />
+
             {stats.gameResults.length > 0 && (
               <div className="col-span-2 sm:col-span-3 bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">Game Results</p>
@@ -137,7 +139,6 @@ export default function PlayerStatsPage() {
               </div>
             )}
 
-            <StatCard title="Games Played" value={stats.gamesPlayed} />
             <StatCard title="Trophies" value={stats.trophies} subtitle="Season + championship wins" />
             <StatCard title="Decisive Games" value={fmtPct(stats.decisiveGameRate)} subtitle="Non-draw rate" />
 
